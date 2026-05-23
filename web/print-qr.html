@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In mã QR - PCCC</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:     #C8342A;
+      --gray-50: #F7F6F4;
+      --gray-100:#EEECEA;
+      --gray-200:#DDDBD7;
+      --gray-400:#9B9894;
+      --gray-500:#716E6A;
+      --gray-700:#3D3B38;
+      --gray-900:#1C1B19;
+      --white:   #FFFFFF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--gray-50); color: var(--gray-900); }
+
+    /* Control panel */
+    .panel {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 12px 24px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .panel-title {
+      font-size: 14px; font-weight: 700; color: var(--red);
+      display: flex; align-items: center; gap: 8px; margin-right: auto;
+    }
+    .count-badge {
+      background: var(--red); color: white;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .panel-group { display: flex; align-items: center; gap: 6px; }
+    .panel-label { font-size: 12px; color: var(--gray-500); font-weight: 600; white-space: nowrap; }
+    .panel-select {
+      padding: 6px 10px; border: 1.5px solid var(--gray-200);
+      border-radius: 8px; font-family: 'Be Vietnam Pro', sans-serif;
+      font-size: 12px; color: var(--gray-900); background: var(--white);
+      outline: none; cursor: pointer;
+    }
+    .panel-select:focus { border-color: var(--red); }
+    .btn {
+      padding: 7px 14px; border-radius: 8px;
+      font-family: 'Be Vietnam Pro', sans-serif;
+      font-size: 12px; font-weight: 600; cursor: pointer; border: none;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-primary   { background: var(--red); color: white; }
+    .btn-secondary { background: var(--white); color: var(--gray-500); border: 1.5px solid var(--gray-200); }
+    .btn:disabled  { opacity: 0.4; cursor: not-allowed; }
+
+    /* Print area */
+    .print-area { padding: 20px; max-width: 1100px; margin: 0 auto; }
+
+    /* QR Grid */
+    .qr-grid { display: grid; gap: 14px; }
+    .qr-grid.col-2 { grid-template-columns: repeat(2, 1fr); }
+    .qr-grid.col-3 { grid-template-columns: repeat(3, 1fr); }
+    .qr-grid.col-4 { grid-template-columns: repeat(4, 1fr); }
+
+    /* QR Card */
+    .qr-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px; padding: 14px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      page-break-inside: avoid; break-inside: avoid;
+    }
+    .qr-header {
+      width: 100%; display: flex; align-items: center; gap: 6px;
+    }
+    .qr-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); }
+    .qr-code-box {
+      width: 100%; display: flex; justify-content: center;
+      padding: 8px; background: var(--white);
+      border: 1px solid var(--gray-100); border-radius: 6px;
+    }
+    .qr-code-box canvas, .qr-code-box img { display: block; }
+    .qr-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px; font-weight: 600; color: var(--red);
+    }
+    .qr-info { width: 100%; }
+    .qr-info-row { display: flex; gap: 5px; font-size: 10px; line-height: 1.5; }
+    .qr-info-label { color: var(--gray-400); font-weight: 600; min-width: 36px; flex-shrink: 0; }
+    .qr-info-val   { color: var(--gray-700); font-weight: 500; }
+    .qr-divider    { width: 100%; height: 1px; background: var(--gray-100); }
+    .qr-footer     { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+    .qr-scan       { font-size: 9px; color: var(--gray-400); font-style: italic; }
+
+    /* State */
+    .state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 14px; text-align: center; padding: 32px; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--gray-200); border-top-color: var(--red); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-icon { font-size: 48px; }
+    .state-msg  { font-size: 14px; font-weight: 600; color: var(--gray-700); }
+    .state-sub  { font-size: 13px; color: var(--gray-400); }
+
+    /* Page break */
+    .page-break { page-break-after: always; break-after: page; }
+
+    @media print {
+      @page { size: A4 portrait; margin: 10mm; }
+      body { background: white; }
+      .panel { display: none !important; }
+      .print-area { padding: 0; max-width: 100%; }
+      .qr-grid.col-2 { gap: 8mm; }
+      .qr-grid.col-3 { gap: 6mm; }
+      .qr-grid.col-4 { gap: 4mm; }
+      .qr-card { border: 1px solid #ccc; border-radius: 4px; padding: 8px; gap: 5px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Control panel -->
+<div class="panel">
+  <div class="panel-title">
+    🧯 In mã QR vị trí
+    <span class="count-badge" id="count-badge">0</span>
+  </div>
+  <div class="panel-group">
+    <span class="panel-label">Khu vực:</span>
+    <select class="panel-select" id="sel-kv" onchange="filterAndRender()">
+      <option value="">Tất cả</option>
+    </select>
+  </div>
+  <div class="panel-group">
+    <span class="panel-label">Cột/trang:</span>
+    <select class="panel-select" id="sel-cols" onchange="filterAndRender()">
+      <option value="2">2 cột (lớn)</option>
+      <option value="3" selected>3 cột (vừa)</option>
+      <option value="4">4 cột (nhỏ)</option>
+    </select>
+  </div>
+  <div class="panel-group">
+    <span class="panel-label">QR size:</span>
+    <select class="panel-select" id="sel-size" onchange="filterAndRender()">
+      <option value="250">Lớn (250px)</option>
+      <option value="200">Lớn (200px)</option>
+      <option value="160">Lớn (160px)</option>
+      <option value="120" selected>Vừa (120px)</option>
+      <option value="90">Nhỏ (90px)</option>
+    </select>
+  </div>
+  <button class="btn btn-secondary" onclick="loadData()">🔄 Tải lại</button>
+  <button class="btn btn-primary" id="btn-print" onclick="window.print()" disabled>🖨️ In / Xuất PDF</button>
+</div>
+
+<!-- Print area -->
+<div class="print-area" id="print-area">
+  <div class="state" id="state-loading">
+    <div class="spinner"></div>
+    <p class="state-sub">Đang tải danh sách vị trí...</p>
+  </div>
+</div>
+
+<script>
+  const API     = 'https://api-pccc.giavico.com.vn/api';
+  const WEB     = 'https://pccc.giavico.com.vn';
+  let allViTri  = [];
+  let authToken = localStorage.getItem('pccc_admin_token');
+
+  async function loadData() {
+    document.getElementById('print-area').innerHTML =
+      '<div class="state"><div class="spinner"></div><p class="state-sub">Đang tải...</p></div>';
+    document.getElementById('btn-print').disabled = true;
+    document.getElementById('count-badge').textContent = '0';
+
+    if (!authToken) {
+      document.getElementById('print-area').innerHTML =
+        '<div class="state"><div class="state-icon">🔐</div><p class="state-msg">Chưa đăng nhập</p><p class="state-sub">Vui lòng đăng nhập trang Admin trước</p></div>';
+      return;
+    }
+
+    try {
+      const res    = await fetch(`${API}/admin/vi-tri`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (!res.ok) throw new Error('Unauthorized');
+      allViTri = await res.json();
+
+      // Fill khu vực select
+      const kvSet = [...new Set(allViTri.map(v => v.khu_vuc?.ten).filter(Boolean))];
+      const sel   = document.getElementById('sel-kv');
+      sel.innerHTML = '<option value="">Tất cả</option>' +
+        kvSet.map(k => `<option value="${k}">${k}</option>`).join('');
+
+      filterAndRender();
+    } catch(e) {
+      document.getElementById('print-area').innerHTML =
+        `<div class="state"><div class="state-icon">⚠️</div><p class="state-msg">Không thể tải dữ liệu</p>
+        <button class="btn btn-primary" onclick="loadData()">Thử lại</button></div>`;
+    }
+  }
+
+  function filterAndRender() {
+    const kv      = document.getElementById('sel-kv').value;
+    const cols    = parseInt(document.getElementById('sel-cols').value);
+    const qrSize  = parseInt(document.getElementById('sel-size').value);
+    const filtered = kv ? allViTri.filter(v => v.khu_vuc?.ten === kv) : allViTri;
+
+    document.getElementById('count-badge').textContent = filtered.length;
+    document.getElementById('btn-print').disabled = filtered.length === 0;
+    renderQR(filtered, cols, qrSize);
+  }
+
+  function renderQR(list, cols, qrSize) {
+    const area = document.getElementById('print-area');
+    if (!list.length) {
+      area.innerHTML = '<div class="state"><div class="state-icon">📋</div><p class="state-sub">Không có vị trí nào</p></div>';
+      return;
+    }
+
+    const rowsPerPage = cols === 4 ? 4 : cols === 3 ? 3 : 2;
+    const perPage     = cols * rowsPerPage;
+    let html = '';
+
+    for (let i = 0; i < list.length; i += perPage) {
+      const page = list.slice(i, i + perPage);
+      html += `<div class="qr-grid col-${cols}" id="grid-${Math.floor(i/perPage)}">`;
+      page.forEach(v => {
+        const binhText = (v.danh_sach_binh || []).map(b => `${b.so_luong} ${b.ma_loai}`).join(', ');
+        html += `
+          <div class="qr-card">
+            <div class="qr-header">
+              <span style="font-size:13px">🧯</span>
+              <span class="qr-label">Vị trí bình chữa cháy</span>
+            </div>
+            <div class="qr-code-box" id="qr-${v.id}"></div>
+            <div class="qr-num">${v.so_thu_tu}</div>
+            <div class="qr-info">
+              <div class="qr-info-row">
+                <span class="qr-info-label">Tên:</span>
+                <span class="qr-info-val">${v.ten_vi_tri}</span>
+              </div>
+              ${v.khu_vuc?.ten ? `
+              <div class="qr-info-row">
+                <span class="qr-info-label">Khu:</span>
+                <span class="qr-info-val">${v.khu_vuc.ten}</span>
+              </div>` : ''}
+              ${binhText ? `
+              <div class="qr-info-row">
+                <span class="qr-info-label">Bình:</span>
+                <span class="qr-info-val">${binhText}</span>
+              </div>` : ''}
+            </div>
+            <div class="qr-divider"></div>
+            <div class="qr-footer">
+              <span style="font-size:9px;color:var(--gray-400)">Đội PCCC CS Giavico</span>
+              <span class="qr-scan">Quét để xem</span>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+      if (i + perPage < list.length) html += '<div class="page-break"></div>';
+    }
+
+    area.innerHTML = html;
+
+    // Gen QR
+    list.forEach(v => {
+      const el = document.getElementById(`qr-${v.id}`);
+      if (!el) return;
+      try {
+        new QRCode(el, {
+          text: `${WEB}/vi-tri/${v.id}`,
+          width: qrSize, height: qrSize,
+          colorDark: '#1C1B19', colorLight: '#FFFFFF',
+          correctLevel: QRCode.CorrectLevel.M,
+        });
+      } catch(e) {
+        el.innerHTML = `<div style="width:${qrSize}px;height:${qrSize}px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray-400)">QR Error</div>`;
+      }
+    });
+  }
+
+  loadData();
+</script>
+</body>
+</html>

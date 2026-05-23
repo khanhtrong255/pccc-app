@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCCC Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:       #C8342A;
+      --red-dark:  #9E2820;
+      --red-light: #FEF2F1;
+      --green:     #1B7A45;
+      --green-bg:  #EAF5EE;
+      --yellow:    #A86B00;
+      --yellow-bg: #FFF6E0;
+      --blue:      #1A5FA8;
+      --blue-bg:   #EAF1FB;
+      --sidebar-w: 220px;
+      --gray-50:   #F7F6F4;
+      --gray-100:  #EEECEA;
+      --gray-200:  #DDDBD7;
+      --gray-300:  #C4C1BC;
+      --gray-400:  #9B9894;
+      --gray-500:  #716E6A;
+      --gray-700:  #3D3B38;
+      --gray-900:  #1C1B19;
+      --white:     #FFFFFF;
+      --radius:    10px;
+      --radius-lg: 14px;
+      --shadow:    0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--white);
+      border-right: 1px solid var(--gray-100);
+      height: 100vh;
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--red);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .logo-text { line-height: 1.2; }
+    .logo-title {
+      font-size: 14px; font-weight: 700;
+      color: var(--gray-900);
+    }
+    .logo-sub {
+      font-size: 11px; color: var(--gray-400);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 10px;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gray-300);
+      padding: 6px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-500);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--gray-50); color: var(--gray-900); }
+    .nav-item.active {
+      background: var(--red-light);
+      color: var(--red);
+      font-weight: 600;
+    }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+    .sidebar-footer {
+      padding: 12px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .user-mini {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      background: var(--gray-50);
+    }
+    .user-mini-avatar {
+      width: 30px; height: 30px;
+      background: var(--red-light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .user-mini-name { font-size: 12px; font-weight: 600; color: var(--gray-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-mini-role { font-size: 10px; color: var(--gray-400); }
+    .btn-logout-sm {
+      background: none; border: none; cursor: pointer;
+      font-size: 14px; color: var(--gray-300); padding: 4px;
+      transition: color 0.15s;
+    }
+    .btn-logout-sm:hover { color: var(--red); }
+
+    /* ── Main ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-100);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+    .topbar-sub   { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+
+    .page-content { padding: 24px 28px; }
+
+    /* ── Stat cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-100);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .stat-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--gray-400); margin-bottom: 8px;
+    }
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px; font-weight: 600;
+      line-height: 1;
+    }
+    .stat-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+    .stat-card.red    .stat-value { color: var(--red); }
+    .stat-card.green  .stat-value { color: var(--green); }
+    .stat-card.yellow .stat-value { color: var(--yellow); }
+    .stat-card.blue   .stat-value { color: var(--blue); }
+
+    /* ── Card ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-100);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+    .card-sub   { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+    .card-body  { padding: 20px; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--gray-400);
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-100);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 11px 16px;
+      color: var(--gray-700);
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: var(--green-bg);  color: var(--green); }
+    .badge-red    { background: var(--red-light);  color: var(--red); }
+    .badge-yellow { background: var(--yellow-bg);  color: var(--yellow); }
+    .badge-gray   { background: var(--gray-100);   color: var(--gray-500); }
+    .badge-blue   { background: var(--blue-bg);    color: var(--blue); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: var(--radius);
+      font-family: 'Be Vietnam Pro', sans-serif;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity 0.15s;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary  { background: var(--red);   color: white; }
+    .btn-outline  { background: var(--white); color: var(--gray-600); border: 1.5px solid var(--gray-200); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn:not(:disabled):active { opacity: 0.8; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .modal-close {
+      width: 28px; height: 28px;
+      border: none; background: var(--gray-100);
+      border-radius: 50%; cursor: pointer;
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+      color: var(--gray-500); transition: background 0.15s;
+    }
+    .modal-close:hover { background: var(--gray-200); }
+    .modal-body   { padding: 20px; }
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--gray-100);
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+
+    /* ── Form elements ── */
+    .form-group  { margin-bottom: 14px; }
+    .form-label  {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--gray-500); margin-bottom: 5px;
+    }
+    .form-label .req { color: var(--red); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 9px 12px;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+      font-family: 'Be Vietnam Pro', sans-serif;
+      font-size: 13px; color: var(--gray-900); background: var(--white);
+      transition: border-color 0.15s; outline: none; appearance: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--red); }
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239B9894' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+    }
+    .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+    /* ── Alert ── */
+    .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 14px; display: none; }
+    .alert.show { display: block; }
+    .alert-error   { background: var(--red-light); color: var(--red);   border: 1px solid #F5C5C2; }
+    .alert-success { background: var(--green-bg);  color: var(--green); border: 1px solid #B2DFC2; }
+
+    /* ── Login overlay ── */
+    .login-overlay {
+      position: fixed; inset: 0; background: var(--gray-50);
+      z-index: 300; display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: var(--white); border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-100); box-shadow: var(--shadow);
+      width: 100%; max-width: 380px; padding: 32px;
+    }
+    .login-logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px;
+    }
+    .login-logo-icon {
+      width: 44px; height: 44px; background: var(--red);
+      border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-size: 22px;
+    }
+    .login-title { font-size: 18px; font-weight: 700; }
+    .login-sub   { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+    .btn-full { width: 100%; justify-content: center; padding: 11px; font-size: 14px; }
+
+    /* ── Confirm modal ── */
+    .confirm-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+    .confirm-msg  { font-size: 14px; text-align: center; color: var(--gray-700); line-height: 1.5; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Hamburger button ── */
+    .hamburger {
+      display: none;
+      width: 36px; height: 36px;
+      background: none; border: none;
+      cursor: pointer; padding: 6px;
+      flex-direction: column; justify-content: space-between;
+      border-radius: 8px; transition: background 0.15s;
+    }
+    .hamburger:hover { background: var(--gray-100); }
+    .hamburger span {
+      display: block; height: 2px;
+      background: var(--gray-700); border-radius: 2px;
+      transition: all 0.25s;
+    }
+
+    /* Sidebar overlay (mobile) */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 99;
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .hamburger { display: flex; }
+
+      .sidebar {
+        position: fixed;
+        left: calc(-1 * var(--sidebar-w) - 10px);
+        top: 0; z-index: 100;
+        height: 100vh;
+        transition: left 0.28s cubic-bezier(.4,0,.2,1);
+        box-shadow: none;
+      }
+      .sidebar.open {
+        left: 0;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      }
+
+      .main { margin-left: 0; }
+      .page-content { padding: 14px; }
+
+      .topbar { padding: 12px 16px; }
+
+      /* Ẩn sub trên mobile cho gọn */
+      .topbar-sub { display: none; }
+
+      /* Bảng scroll ngang */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Stat grid 2 cột trên mobile */
+      .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── LOGIN OVERLAY ── -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🧯</div>
+      <div>
+        <div class="login-title">PCCC Admin</div>
+        <div class="login-sub">Hệ thống quản lý bình chữa cháy</div>
+      </div>
+    </div>
+    <div id="alert-login" class="alert alert-error"></div>
+    <div class="form-group">
+      <label class="form-label">Mã nhân viên</label>
+      <input type="text" id="login-ma" class="form-input" placeholder="Nhập mã nhân viên" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mật khẩu</label>
+      <input type="password" id="login-mk" class="form-input" placeholder="Nhập mật khẩu" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-full" id="btn-login-admin" onclick="doLogin()">Đăng nhập</button>
+  </div>
+</div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🧯</div>
+    <div class="logo-text">
+      <div class="logo-title">PCCC Admin</div>
+      <div class="logo-sub">Quản lý hệ thống</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Tổng quan</div>
+    <a class="nav-item active" href="#" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <div class="nav-section-label" style="margin-top:8px">Quản lý</div>
+    <a class="nav-item" href="#" onclick="showPage('khu-vuc')">
+      <span class="nav-icon">🗂️</span> Khu vực
+    </a>
+    <a class="nav-item" href="#" onclick="showPage('vi-tri')">
+      <span class="nav-icon">📍</span> Vị trí
+    </a>
+    <a class="nav-item" href="#" onclick="showPage('nhan-vien')">
+      <span class="nav-icon">👷</span> Nhân viên
+    </a>
+    <a class="nav-item" href="#" onclick="showPage('tieu-chi')">
+      <span class="nav-icon">✅</span> Tiêu chí kiểm tra
+    </a>
+    <div class="nav-section-label" style="margin-top:8px">Khác</div>
+    <a class="nav-item" href="/print-qr.html" target="_blank">
+      <span class="nav-icon">🖨️</span> In mã QR
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-mini">
+      <div class="user-mini-avatar">👤</div>
+      <div style="flex:1;min-width:0">
+        <div class="user-mini-name" id="sidebar-user-name">—</div>
+        <div class="user-mini-role" id="sidebar-user-role">—</div>
+      </div>
+      <button class="btn-logout-sm" onclick="openDoiMKAdmin()" title="Đổi mật khẩu">🔑</button>
+      <button class="btn-logout-sm" onclick="doLogout()" title="Đăng xuất">⎋</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub"  id="topbar-sub">Tổng quan hệ thống</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: DASHBOARD ── -->
+  <div class="page-content" id="page-dashboard">
+
+    <!-- Stat cards -->
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">Tổng vị trí</div>
+        <div class="stat-value" id="stat-vi-tri">—</div>
+        <div class="stat-sub">đang hoạt động</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Đã kiểm tra</div>
+        <div class="stat-value" id="stat-da-kt">—</div>
+        <div class="stat-sub" id="stat-da-kt-sub">tháng này</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Chưa kiểm tra</div>
+        <div class="stat-value" id="stat-chua-kt">—</div>
+        <div class="stat-sub" id="stat-chua-kt-sub">tháng này</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-label">Nhân viên</div>
+        <div class="stat-value" id="stat-nv">—</div>
+        <div class="stat-sub">đang hoạt động</div>
+      </div>
+    </div>
+
+    <!-- Bảng vị trí chưa kiểm tra -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Vị trí chưa kiểm tra tháng này</div>
+          <div class="card-sub" id="chua-kt-sub">—</div>
+        </div>
+        <a class="btn btn-outline btn-sm" href="#" onclick="showPage('vi-tri')">Xem tất cả →</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tên vị trí</th>
+              <th>Khu vực</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-chua-kt"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <!-- end dashboard -->
+
+  <!-- ── PAGE: VỊ TRÍ ── -->
+  <div class="page-content" id="page-vi-tri" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Danh sách vị trí</div>
+          <div class="card-sub" id="vi-tri-count">—</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModalViTri()">+ Thêm vị trí</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tên vị trí</th>
+              <th>Khu vực</th>
+              <th>Loại bình</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-vi-tri"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: NHÂN VIÊN ── -->
+  <div class="page-content" id="page-nhan-vien" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Danh sách nhân viên</div>
+          <div class="card-sub" id="nv-count">—</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModalNhanVien()">+ Thêm nhân viên</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã NV</th>
+              <th>Họ tên</th>
+              <th>Quyền</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-nhan-vien"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: TIÊU CHÍ ── -->
+  <div class="page-content" id="page-tieu-chi" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tiêu chí kiểm tra</div>
+          <div class="card-sub">Quản lý theo loại bình</div>
+        </div>
+      </div>
+      <div class="card-body" id="tieu-chi-body">
+        <p style="color:var(--gray-400);font-size:13px">Đang tải...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: KHU VỰC ── -->
+  <div class="page-content" id="page-khu-vuc" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Danh sách khu vực</div>
+          <div class="card-sub" id="kv-count">—</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModalKhuVuc()">+ Thêm khu vực</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã</th>
+              <th>Tên khu vực</th>
+              <th>Mô tả</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-khu-vuc"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end main -->
+
+<!-- ── MODAL KHU VỰC ── -->
+<div id="modal-khu-vuc" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-khu-vuc')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-kv-title">Thêm khu vực</span>
+        <button class="modal-close" onclick="closeModal('modal-khu-vuc')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-kv" class="alert"></div>
+        <input type="hidden" id="kv-id">
+        <div class="form-group">
+          <label class="form-label">Mã khu vực <span class="req">*</span></label>
+          <input type="text" id="kv-ma" class="form-input" placeholder="VD: T1, T2, KHO">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tên khu vực <span class="req">*</span></label>
+          <input type="text" id="kv-ten" class="form-input" placeholder="VD: Tầng 1, Kho hàng">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả</label>
+          <textarea id="kv-mo-ta" class="form-textarea" placeholder="Mô tả thêm..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-khu-vuc')">Hủy</button>
+        <button class="btn btn-primary" onclick="saveKhuVuc()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL VỊ TRÍ ── -->
+<div id="modal-vi-tri" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-vi-tri')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-vt-title">Thêm vị trí mới</span>
+        <button class="modal-close" onclick="closeModal('modal-vi-tri')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-vt" class="alert"></div>
+        <input type="hidden" id="vt-id">
+        <div class="form-group">
+          <label class="form-label">Số thứ tự <span class="req">*</span></label>
+          <input type="number" id="vt-stt" class="form-input" placeholder="VD: 1, 2, 3...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tên vị trí <span class="req">*</span></label>
+          <input type="text" id="vt-ten" class="form-input" placeholder="VD: Hành lang tầng 1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Khu vực</label>
+          <select id="vt-khu-vuc" class="form-select">
+            <option value="">-- Chọn khu vực --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả</label>
+          <textarea id="vt-mo-ta" class="form-textarea" placeholder="Mô tả thêm về vị trí..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái</label>
+          <select id="vt-trang-thai" class="form-select">
+            <option value="hoat_dong">Hoạt động</option>
+            <option value="ngung">Ngưng</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-vi-tri')">Hủy</button>
+        <button class="btn btn-primary" id="btn-save-vt" onclick="saveViTri()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL BÌNH TẠI VỊ TRÍ ── -->
+<div id="modal-binh-vi-tri" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-binh-vi-tri')">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div>
+          <span class="modal-title">Quản lý bình tại vị trí</span>
+          <div style="font-size:12px;color:var(--gray-400);margin-top:2px" id="modal-bvt-subtitle">—</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('modal-binh-vi-tri')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-bvt" class="alert"></div>
+
+        <!-- Danh sách bình hiện có -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px">
+            Bình đang có tại vị trí
+          </div>
+          <div id="binh-hien-co">
+            <p style="font-size:13px;color:var(--gray-400)">Đang tải...</p>
+          </div>
+        </div>
+
+        <!-- Thêm bình mới -->
+        <div style="border-top:1px solid var(--gray-100);padding-top:16px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:10px">
+            Thêm loại bình
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div style="flex:1">
+              <label class="form-label">Loại bình</label>
+              <select id="bvt-loai" class="form-select"></select>
+            </div>
+            <div style="width:80px">
+              <label class="form-label">Số lượng</label>
+              <input type="number" id="bvt-so-luong" class="form-input" value="1" min="1">
+            </div>
+            <button class="btn btn-primary" style="margin-bottom:1px" onclick="addBinhViTri()">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-binh-vi-tri')">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL NHÂN VIÊN ── -->
+<div id="modal-nhan-vien" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-nhan-vien')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-nv-title">Thêm nhân viên</span>
+        <button class="modal-close" onclick="closeModal('modal-nhan-vien')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-nv" class="alert"></div>
+        <input type="hidden" id="nv-id">
+        <div class="form-group">
+          <label class="form-label">Họ tên <span class="req">*</span></label>
+          <input type="text" id="nv-ho-ten" class="form-input" placeholder="Nguyễn Văn A">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã nhân viên <span class="req">*</span></label>
+          <input type="text" id="nv-ma" class="form-input" placeholder="VD: nv001">
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="lbl-mk">Mật khẩu <span class="req">*</span></label>
+          <input type="password" id="nv-mk" class="form-input" placeholder="Mật khẩu đăng nhập">
+          <p id="mk-hint" style="font-size:11px;color:var(--gray-400);margin-top:4px;display:none">Để trống nếu không đổi mật khẩu</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quyền</label>
+          <select id="nv-quyen" class="form-select">
+            <option value="cap_nhat">Bảo vệ (chỉ cập nhật)</option>
+            <option value="toan_quyen">Toàn quyền</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái</label>
+          <select id="nv-active" class="form-select">
+            <option value="true">Đang hoạt động</option>
+            <option value="false">Đã khóa</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-nhan-vien')">Hủy</button>
+        <button class="btn btn-primary" id="btn-save-nv" onclick="saveNhanVien()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL SỬA TIÊU CHÍ ── -->
+<div id="modal-tieu-chi" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-tieu-chi')">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-tc-title">Sửa tiêu chí</span>
+        <button class="modal-close" onclick="closeModal('modal-tieu-chi')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-tc" class="alert"></div>
+        <input type="hidden" id="tc-id">
+        <input type="hidden" id="tc-loai-binh-id">
+        <div class="form-group">
+          <label class="form-label">Số thứ tự <span class="req">*</span></label>
+          <input type="number" id="tc-stt" class="form-input" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nội dung tiêu chí <span class="req">*</span></label>
+          <textarea id="tc-noi-dung" class="form-textarea" placeholder="Nhập nội dung tiêu chí..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái</label>
+          <select id="tc-active" class="form-select">
+            <option value="true">Bật</option>
+            <option value="false">Tắt</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-tieu-chi')">Hủy</button>
+        <button class="btn btn-primary" onclick="saveTieuChi()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL ĐỔI MẬT KHẨU ADMIN ── -->
+<div id="modal-doi-mk-admin" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-doi-mk-admin')">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <span class="modal-title">🔑 Đổi mật khẩu</span>
+        <button class="modal-close" onclick="closeModal('modal-doi-mk-admin')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-doi-mk-admin" class="alert"></div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu hiện tại <span class="req">*</span></label>
+          <input type="password" id="admin-mk-cu" class="form-input" placeholder="Nhập mật khẩu hiện tại">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu mới <span class="req">*</span></label>
+          <input type="password" id="admin-mk-moi" class="form-input" placeholder="Ít nhất 6 ký tự">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Xác nhận mật khẩu mới <span class="req">*</span></label>
+          <input type="password" id="admin-mk-moi2" class="form-input" placeholder="Nhập lại mật khẩu mới">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-doi-mk-admin')">Hủy</button>
+        <button class="btn btn-primary" id="btn-doi-mk-admin" onclick="doDoiMKAdmin()">💾 Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL CONFIRM ── -->
+<div id="modal-confirm" style="display:none">
+  <div class="modal-overlay">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-body" style="padding:28px 24px 20px;text-align:center">
+        <div class="confirm-icon" id="confirm-icon">⚠️</div>
+        <p class="confirm-msg" id="confirm-msg">Bạn có chắc muốn thực hiện thao tác này?</p>
+      </div>
+      <div class="modal-footer" style="justify-content:center">
+        <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Hủy</button>
+        <button class="btn btn-primary" id="btn-confirm-ok" style="background:var(--red)">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────
+  const API = 'https://api-pccc.giavico.com.vn/api';
+
+  // ── State ───────────────────────────────────────────────
+  let authToken   = null;
+  let currentUser = null;
+  let khuVucList  = [];
+  let loaiBinhList = [];
+  let currentPage = 'dashboard';
+
+  // ── Sidebar mobile ──────────────────────────────────────
+  function toggleSidebar() {
+    const sidebar  = document.getElementById('sidebar');
+    const overlay  = document.getElementById('sidebar-overlay');
+    const isOpen   = sidebar.classList.contains('open');
+    if (isOpen) {
+      closeSidebar();
+    } else {
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  // ── Auth ────────────────────────────────────────────────
+  function saveSession(token, user) {
+    localStorage.setItem('pccc_admin_token', token);
+    localStorage.setItem('pccc_admin_user', JSON.stringify(user));
+  }
+  function loadSession() {
+    const t = localStorage.getItem('pccc_admin_token');
+    const u = localStorage.getItem('pccc_admin_user');
+    if (t && u) { authToken = t; currentUser = JSON.parse(u); return true; }
+    return false;
+  }
+  function clearSession() {
+    localStorage.removeItem('pccc_admin_token');
+    localStorage.removeItem('pccc_admin_user');
+    authToken = null; currentUser = null;
+  }
+
+  async function doLogin() {
+    const ma = document.getElementById('login-ma').value.trim();
+    const mk = document.getElementById('login-mk').value;
+    if (!ma || !mk) return;
+    const btn = document.getElementById('btn-login-admin');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Đang đăng nhập...';
+    try {
+      const res  = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ma_nhan_vien: ma, mat_khau: mk }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showAlert('alert-login', data.detail || 'Đăng nhập thất bại', 'error');
+        btn.disabled = false; btn.innerHTML = 'Đăng nhập';
+        return;
+      }
+      if (data.quyen !== 'toan_quyen') {
+        showAlert('alert-login', 'Tài khoản không có quyền truy cập trang quản trị', 'error');
+        btn.disabled = false; btn.innerHTML = 'Đăng nhập';
+        return;
+      }
+      authToken   = data.access_token;
+      currentUser = { ho_ten: data.ho_ten, quyen: data.quyen };
+      saveSession(authToken, currentUser);
+      initApp();
+    } catch(e) {
+      showAlert('alert-login', 'Không thể kết nối máy chủ', 'error');
+      btn.disabled = false; btn.innerHTML = 'Đăng nhập';
+    }
+  }
+
+  async function doLogout() {
+    try { await fetch(`${API}/auth/logout`, { method: 'POST', headers: authHeader() }); } catch(e) {}
+    clearSession(); location.reload();
+  }
+
+  // ── Helpers ─────────────────────────────────────────────
+  function authHeader() { return { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }; }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = `alert alert-${type} show`;
+    el.textContent = msg;
+  }
+
+  function openModal(id)  { document.getElementById(id).style.display = 'block'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  function confirm(icon, msg, onOk) {
+    document.getElementById('confirm-icon').textContent = icon;
+    document.getElementById('confirm-msg').textContent  = msg;
+    document.getElementById('btn-confirm-ok').onclick   = () => { closeModal('modal-confirm'); onOk(); };
+    openModal('modal-confirm');
+  }
+
+  // ── Navigation ───────────────────────────────────────────
+  function showPage(page) {
+    ['dashboard','vi-tri','nhan-vien','tieu-chi','khu-vuc'].forEach(p => {
+      document.getElementById(`page-${p}`).style.display = p === page ? '' : 'none';
+    });
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event?.currentTarget?.classList.add('active');
+
+    const titles = {
+      'dashboard':  ['Dashboard',          'Tổng quan hệ thống'],
+      'khu-vuc':    ['Quản lý khu vực',    'Thêm, sửa, xóa khu vực'],
+      'vi-tri':     ['Quản lý vị trí',     'Thêm, sửa, xóa vị trí'],
+      'nhan-vien':  ['Quản lý nhân viên',  'Tài khoản bảo vệ'],
+      'tieu-chi':   ['Tiêu chí kiểm tra',  'Quản lý theo loại bình'],
+    };
+    const [t, s] = titles[page] || ['', ''];
+    document.getElementById('topbar-title').textContent = t;
+    document.getElementById('topbar-sub').textContent   = s;
+
+    currentPage = page;
+    if (page === 'khu-vuc')   loadKhuVuc();
+    if (page === 'vi-tri')    loadViTri();
+    if (page === 'nhan-vien') loadNhanVien();
+    if (page === 'tieu-chi')  loadTieuChi();
+    // Đóng sidebar trên mobile khi chọn menu
+    closeSidebar();
+  }
+
+  // ── Dashboard ────────────────────────────────────────────
+  async function loadDashboard() {
+    try {
+      const res  = await fetch(`${API}/admin/thong-ke`, { headers: authHeader() });
+      const data = await res.json();
+      document.getElementById('stat-vi-tri').textContent  = data.tong_vi_tri;
+      document.getElementById('stat-da-kt').textContent   = data.phieu_thang_nay;
+      document.getElementById('stat-chua-kt').textContent = data.chua_kiem_tra_thang_nay;
+      document.getElementById('stat-nv').textContent      = data.tong_nhan_vien;
+      document.getElementById('stat-da-kt-sub').textContent   = `tháng ${data.thang}/${data.nam}`;
+      document.getElementById('stat-chua-kt-sub').textContent = `tháng ${data.thang}/${data.nam}`;
+      document.getElementById('chua-kt-sub').textContent = `Tháng ${data.thang}/${data.nam}`;
+    } catch(e) {}
+
+    // Load vị trí chưa kiểm tra
+    try {
+      const [resVT, resPhieu] = await Promise.all([
+        fetch(`${API}/admin/vi-tri`, { headers: authHeader() }),
+        fetch(`${API}/admin/thong-ke`, { headers: authHeader() }),
+      ]);
+      const vtList = await resVT.json();
+      const tbody  = document.getElementById('tbl-chua-kt');
+      const today  = new Date();
+
+      // Lấy danh sách vị trí chưa kiểm tra — ta dùng API thống kê đã có
+      tbody.innerHTML = vtList.slice(0, 10).map(vt => `
+        <tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gray-400)">#${vt.so_thu_tu}</span></td>
+          <td style="font-weight:500">${vt.ten_vi_tri}</td>
+          <td>${vt.khu_vuc?.ten || '—'}</td>
+          <td>
+            <a href="/vi-tri/${vt.id}" target="_blank" class="btn btn-outline btn-sm">Xem QR</a>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {}
+  }
+
+  // ── Vị trí ──────────────────────────────────────────────
+  async function loadViTri() {
+    try {
+      const res    = await fetch(`${API}/admin/vi-tri`, { headers: authHeader() });
+      const vtList = await res.json();
+      document.getElementById('vi-tri-count').textContent = `${vtList.length} vị trí`;
+      const tbody = document.getElementById('tbl-vi-tri');
+      tbody.innerHTML = vtList.map(vt => `
+        <tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gray-400)">#${vt.so_thu_tu}</span></td>
+          <td style="font-weight:500">${vt.ten_vi_tri}</td>
+          <td>${vt.khu_vuc?.ten || '—'}</td>
+          <td>${vt.so_loai_binh} loại</td>
+          <td>
+            <span class="badge ${vt.trang_thai === 'hoat_dong' ? 'badge-green' : 'badge-gray'}">
+              ${vt.trang_thai === 'hoat_dong' ? 'Hoạt động' : 'Ngưng'}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-outline btn-sm" onclick="editViTri(${JSON.stringify(vt).replace(/"/g,'&quot;')})">Sửa</button>
+              <button class="btn btn-outline btn-sm"
+                onclick="openBinhViTri('${vt.id}','${vt.ten_vi_tri}')">🧯 Bình</button>
+              <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)"
+                onclick="deleteViTri('${vt.id}','${vt.ten_vi_tri}')">Xóa</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function openModalViTri(vt) {
+    document.getElementById('alert-vt').className = 'alert';
+    document.getElementById('vt-id').value        = '';
+    document.getElementById('vt-stt').value       = '';
+    document.getElementById('vt-ten').value       = '';
+    document.getElementById('vt-mo-ta').value     = '';
+    document.getElementById('vt-trang-thai').value = 'hoat_dong';
+    document.getElementById('modal-vt-title').textContent = 'Thêm vị trí mới';
+    // Fill khu vực options
+    const sel = document.getElementById('vt-khu-vuc');
+    sel.innerHTML = '<option value="">-- Chọn khu vực --</option>' +
+      khuVucList.map(k => `<option value="${k.id}">${k.ten_khu_vuc}</option>`).join('');
+    openModal('modal-vi-tri');
+  }
+
+  function editViTri(vt) {
+    openModalViTri();
+    document.getElementById('modal-vt-title').textContent = 'Chỉnh sửa vị trí';
+    document.getElementById('vt-id').value    = vt.id;
+    document.getElementById('vt-stt').value   = vt.so_thu_tu;
+    document.getElementById('vt-ten').value   = vt.ten_vi_tri;
+    document.getElementById('vt-mo-ta').value = vt.mo_ta || '';
+    document.getElementById('vt-trang-thai').value = vt.trang_thai;
+    if (vt.khu_vuc?.id) document.getElementById('vt-khu-vuc').value = vt.khu_vuc.id;
+  }
+
+  async function saveViTri() {
+    const id  = document.getElementById('vt-id').value;
+    const body = {
+      so_thu_tu:  parseInt(document.getElementById('vt-stt').value),
+      ten_vi_tri: document.getElementById('vt-ten').value.trim(),
+      khu_vuc_id: document.getElementById('vt-khu-vuc').value || null,
+      mo_ta:      document.getElementById('vt-mo-ta').value || null,
+      trang_thai: document.getElementById('vt-trang-thai').value,
+    };
+    if (!body.ten_vi_tri || !body.so_thu_tu) {
+      showAlert('alert-vt', 'Vui lòng điền đầy đủ thông tin bắt buộc', 'error'); return;
+    }
+    const url    = id ? `${API}/admin/vi-tri/${id}` : `${API}/admin/vi-tri`;
+    const method = id ? 'PUT' : 'POST';
+    try {
+      const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
+      if (res.ok) {
+        closeModal('modal-vi-tri'); loadViTri();
+      } else {
+        const err = await res.json();
+        showAlert('alert-vt', err.detail || 'Có lỗi xảy ra', 'error');
+      }
+    } catch(e) { showAlert('alert-vt', 'Không thể kết nối máy chủ', 'error'); }
+  }
+
+  function deleteViTri(id, ten) {
+    confirm('🗑️', `Xóa vị trí "${ten}"?\nThao tác này không thể hoàn tác.`, async () => {
+      const res = await fetch(`${API}/admin/vi-tri/${id}`, { method: 'DELETE', headers: authHeader() });
+      if (res.ok) {
+        loadViTri();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Không thể xóa vị trí này');
+      }
+    });
+  }
+
+  // ── Nhân viên ────────────────────────────────────────────
+  async function loadNhanVien() {
+    try {
+      const res    = await fetch(`${API}/admin/nhan-vien`, { headers: authHeader() });
+      const nvList = await res.json();
+      document.getElementById('nv-count').textContent = `${nvList.length} nhân viên`;
+      const tbody = document.getElementById('tbl-nhan-vien');
+      tbody.innerHTML = nvList.map(nv => `
+        <tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${nv.ma_nhan_vien}</span></td>
+          <td style="font-weight:500">${nv.ho_ten}</td>
+          <td>
+            <span class="badge ${nv.quyen === 'toan_quyen' ? 'badge-blue' : 'badge-gray'}">
+              ${nv.quyen === 'toan_quyen' ? 'Toàn quyền' : 'Bảo vệ'}
+            </span>
+          </td>
+          <td>
+            <span class="badge ${nv.is_active ? 'badge-green' : 'badge-red'}">
+              ${nv.is_active ? 'Hoạt động' : 'Đã khóa'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="editNhanVien(${JSON.stringify(nv).replace(/"/g,'&quot;')})">Sửa</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function openModalNhanVien() {
+    document.getElementById('alert-nv').className   = 'alert';
+    document.getElementById('nv-id').value          = '';
+    document.getElementById('nv-ho-ten').value      = '';
+    document.getElementById('nv-ma').value          = '';
+    document.getElementById('nv-mk').value          = '';
+    document.getElementById('nv-quyen').value       = 'cap_nhat';
+    document.getElementById('nv-active').value      = 'true';
+    document.getElementById('lbl-mk').innerHTML     = 'Mật khẩu <span class="req">*</span>';
+    document.getElementById('mk-hint').style.display = 'none';
+    document.getElementById('modal-nv-title').textContent = 'Thêm nhân viên';
+    openModal('modal-nhan-vien');
+  }
+
+  function editNhanVien(nv) {
+    openModalNhanVien();
+    document.getElementById('modal-nv-title').textContent = 'Chỉnh sửa nhân viên';
+    document.getElementById('nv-id').value     = nv.id;
+    document.getElementById('nv-ho-ten').value = nv.ho_ten;
+    document.getElementById('nv-ma').value     = nv.ma_nhan_vien;
+    document.getElementById('nv-quyen').value  = nv.quyen;
+    document.getElementById('nv-active').value = String(nv.is_active);
+    document.getElementById('lbl-mk').innerHTML = 'Mật khẩu';
+    document.getElementById('mk-hint').style.display = 'block';
+    openModal('modal-nhan-vien');
+  }
+
+  async function saveNhanVien() {
+    const id   = document.getElementById('nv-id').value;
+    const body = {
+      ho_ten:       document.getElementById('nv-ho-ten').value.trim(),
+      ma_nhan_vien: document.getElementById('nv-ma').value.trim(),
+      mat_khau:     document.getElementById('nv-mk').value || null,
+      quyen:        document.getElementById('nv-quyen').value,
+      is_active:    document.getElementById('nv-active').value === 'true',
+    };
+    if (!body.ho_ten || !body.ma_nhan_vien) {
+      showAlert('alert-nv', 'Vui lòng điền đầy đủ thông tin bắt buộc', 'error'); return;
+    }
+    if (!id && !body.mat_khau) {
+      showAlert('alert-nv', 'Mật khẩu không được để trống khi tạo mới', 'error'); return;
+    }
+    const url    = id ? `${API}/admin/nhan-vien/${id}` : `${API}/admin/nhan-vien`;
+    const method = id ? 'PUT' : 'POST';
+    try {
+      const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
+      if (res.ok) {
+        closeModal('modal-nhan-vien'); loadNhanVien();
+      } else {
+        const err = await res.json();
+        showAlert('alert-nv', err.detail || 'Có lỗi xảy ra', 'error');
+      }
+    } catch(e) { showAlert('alert-nv', 'Không thể kết nối máy chủ', 'error'); }
+  }
+
+  // ── Tiêu chí ─────────────────────────────────────────────
+  async function loadTieuChi() {
+    const body = document.getElementById('tieu-chi-body');
+    body.innerHTML = '<p style="color:var(--gray-400);font-size:13px">Đang tải...</p>';
+    try {
+      const res  = await fetch(`${API}/admin/loai-binh`, { headers: authHeader() });
+      const list = await res.json();
+
+      const htmlList = await Promise.all(list.map(async lb => {
+        const resTC = await fetch(`${API}/admin/loai-binh/${lb.id}/tieu-chi`, { headers: authHeader() });
+        const tcList = await resTC.json();
+        return `
+          <div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div>
+                <span style="font-size:14px;font-weight:600">${lb.ten_loai}</span>
+                <span class="badge badge-gray" style="margin-left:8px;font-size:10px">${lb.ma_loai}</span>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="openAddTieuChi('${lb.id}','${lb.ten_loai}')">+ Thêm</button>
+            </div>
+            <div style="border:1px solid var(--gray-100);border-radius:var(--radius);overflow:hidden">
+              <table style="width:100%;border-collapse:collapse;font-size:13px">
+                <thead>
+                  <tr style="background:var(--gray-50)">
+                    <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-400)">STT</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-400)">Nội dung</th>
+                    <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-400)">Trạng thái</th>
+                    <th style="padding:8px 12px"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${tcList.map(tc => `
+                    <tr style="border-top:1px solid var(--gray-100)">
+                      <td style="padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gray-400)">${tc.stt}</td>
+                      <td style="padding:9px 12px;color:var(--gray-700)">${tc.noi_dung}</td>
+                      <td style="padding:9px 12px">
+                        <span class="badge ${tc.is_active ? 'badge-green' : 'badge-gray'}">${tc.is_active ? 'Bật' : 'Tắt'}</span>
+                      </td>
+                      <td style="padding:9px 12px">
+                        <div style="display:flex;gap:5px">
+                          <button class="btn btn-outline btn-sm"
+                            onclick="editTieuChi('${tc.id}', ${tc.stt}, this)"
+                            data-noidung="${tc.noi_dung.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"
+                            data-active="${tc.is_active}"
+                            data-lbid="${lb.id}">
+                            Sửa
+                          </button>
+                          <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)"
+                            onclick="deleteTieuChi('${tc.id}','${tc.noi_dung}')">
+                            Xóa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }));
+      body.innerHTML = htmlList.join('');
+    } catch(e) {
+      body.innerHTML = '<p style="color:var(--red);font-size:13px">Không thể tải dữ liệu</p>';
+    }
+  }
+
+  function openAddTieuChi(lbId, lbTen) {
+    document.getElementById('alert-tc').className = 'alert';
+    document.getElementById('tc-id').value           = '';
+    document.getElementById('tc-loai-binh-id').value = lbId;
+    document.getElementById('tc-stt').value          = '';
+    document.getElementById('tc-noi-dung').value     = '';
+    document.getElementById('tc-active').value       = 'true';
+    document.getElementById('modal-tc-title').textContent = `Thêm tiêu chí — ${lbTen}`;
+    openModal('modal-tieu-chi');
+  }
+
+  function editTieuChi(id, stt, el) {
+    const noidung  = el.getAttribute('data-noidung');
+    const isActive = el.getAttribute('data-active');
+    const lbId     = el.getAttribute('data-lbid');
+    document.getElementById('alert-tc').className = 'alert';
+    document.getElementById('tc-id').value           = id;
+    document.getElementById('tc-loai-binh-id').value = lbId;
+    document.getElementById('tc-stt').value          = stt;
+    document.getElementById('tc-noi-dung').value     = noidung;
+    document.getElementById('tc-active').value       = isActive;
+    document.getElementById('modal-tc-title').textContent = 'Sửa tiêu chí';
+    openModal('modal-tieu-chi');
+  }
+
+  async function saveTieuChi() {
+    const id    = document.getElementById('tc-id').value;
+    const lbId  = document.getElementById('tc-loai-binh-id').value;
+    const body  = {
+      stt:      parseInt(document.getElementById('tc-stt').value),
+      noi_dung: document.getElementById('tc-noi-dung').value.trim(),
+      is_active: document.getElementById('tc-active').value === 'true',
+    };
+    if (!body.noi_dung || !body.stt) {
+      showAlert('alert-tc', 'Vui lòng điền đầy đủ thông tin', 'error'); return;
+    }
+    const url    = id ? `${API}/admin/tieu-chi/${id}` : `${API}/admin/loai-binh/${lbId}/tieu-chi`;
+    const method = id ? 'PUT' : 'POST';
+    try {
+      const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
+      if (res.ok) {
+        closeModal('modal-tieu-chi');
+        loadTieuChi();
+      } else {
+        const err = await res.json();
+        showAlert('alert-tc', err.detail || 'Có lỗi xảy ra', 'error');
+      }
+    } catch(e) { showAlert('alert-tc', 'Không thể kết nối', 'error'); }
+  }
+
+  function deleteTieuChi(id, noidung) {
+    confirm('🗑️', `Xóa tiêu chí "${noidung}"?`, async () => {
+      await fetch(`${API}/admin/tieu-chi/${id}`, { method: 'DELETE', headers: authHeader() });
+      loadTieuChi();
+    });
+  }
+
+  // ── Đổi mật khẩu admin ──────────────────────────────────
+  function openDoiMKAdmin() {
+    document.getElementById('admin-mk-cu').value   = '';
+    document.getElementById('admin-mk-moi').value  = '';
+    document.getElementById('admin-mk-moi2').value = '';
+    document.getElementById('alert-doi-mk-admin').className = 'alert';
+    openModal('modal-doi-mk-admin');
+  }
+
+  async function doDoiMKAdmin() {
+    const cu   = document.getElementById('admin-mk-cu').value;
+    const moi  = document.getElementById('admin-mk-moi').value;
+    const moi2 = document.getElementById('admin-mk-moi2').value;
+
+    if (!cu || !moi || !moi2) {
+      showAlert('alert-doi-mk-admin', 'Vui lòng điền đầy đủ thông tin', 'error'); return;
+    }
+    if (moi !== moi2) {
+      showAlert('alert-doi-mk-admin', 'Mật khẩu mới không khớp', 'error'); return;
+    }
+    if (moi.length < 6) {
+      showAlert('alert-doi-mk-admin', 'Mật khẩu mới phải có ít nhất 6 ký tự', 'error'); return;
+    }
+
+    const btn = document.getElementById('btn-doi-mk-admin');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Đang lưu...';
+
+    try {
+      const res = await fetch(`${API}/auth/doi-mat-khau`, {
+        method: 'PUT',
+        headers: { ...authHeader() },
+        body: JSON.stringify({ mat_khau_cu: cu, mat_khau_moi: moi }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showAlert('alert-doi-mk-admin', '✅ Đổi mật khẩu thành công!', 'success');
+        setTimeout(() => closeModal('modal-doi-mk-admin'), 1500);
+      } else {
+        showAlert('alert-doi-mk-admin', data.detail || 'Có lỗi xảy ra', 'error');
+      }
+    } catch(e) {
+      showAlert('alert-doi-mk-admin', 'Không thể kết nối máy chủ', 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '💾 Lưu';
+  }
+
+  // ── Khu vực ─────────────────────────────────────────────────
+  async function loadKhuVuc() {
+    try {
+      const res    = await fetch(`${API}/admin/khu-vuc`, { headers: authHeader() });
+      khuVucList   = await res.json();
+      document.getElementById('kv-count').textContent = `${khuVucList.length} khu vực`;
+      const tbody = document.getElementById('tbl-khu-vuc');
+      tbody.innerHTML = khuVucList.map(kv => `
+        <tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${kv.ma_khu_vuc}</span></td>
+          <td style="font-weight:500">${kv.ten_khu_vuc}</td>
+          <td style="color:var(--gray-400);font-size:12px">${kv.mo_ta || '—'}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-outline btn-sm" onclick="editKhuVuc(${JSON.stringify(kv).replace(/"/g,'&quot;')})">Sửa</button>
+              <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)"
+                onclick="deleteKhuVuc('${kv.id}','${kv.ten_khu_vuc}')">Xóa</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function openModalKhuVuc() {
+    document.getElementById('alert-kv').className = 'alert';
+    document.getElementById('kv-id').value    = '';
+    document.getElementById('kv-ma').value    = '';
+    document.getElementById('kv-ten').value   = '';
+    document.getElementById('kv-mo-ta').value = '';
+    document.getElementById('modal-kv-title').textContent = 'Thêm khu vực';
+    openModal('modal-khu-vuc');
+  }
+
+  function editKhuVuc(kv) {
+    openModalKhuVuc();
+    document.getElementById('modal-kv-title').textContent = 'Chỉnh sửa khu vực';
+    document.getElementById('kv-id').value    = kv.id;
+    document.getElementById('kv-ma').value    = kv.ma_khu_vuc;
+    document.getElementById('kv-ten').value   = kv.ten_khu_vuc;
+    document.getElementById('kv-mo-ta').value = kv.mo_ta || '';
+  }
+
+  async function saveKhuVuc() {
+    const id   = document.getElementById('kv-id').value;
+    const body = {
+      ma_khu_vuc:  document.getElementById('kv-ma').value.trim().toUpperCase(),
+      ten_khu_vuc: document.getElementById('kv-ten').value.trim(),
+      mo_ta:       document.getElementById('kv-mo-ta').value || null,
+    };
+    if (!body.ma_khu_vuc || !body.ten_khu_vuc) {
+      showAlert('alert-kv', 'Vui lòng điền đầy đủ thông tin bắt buộc', 'error'); return;
+    }
+    const url    = id ? `${API}/admin/khu-vuc/${id}` : `${API}/admin/khu-vuc`;
+    const method = id ? 'PUT' : 'POST';
+    try {
+      const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
+      if (res.ok) {
+        closeModal('modal-khu-vuc');
+        await loadKhuVuc();
+      } else {
+        const err = await res.json();
+        showAlert('alert-kv', err.detail || 'Có lỗi xảy ra', 'error');
+      }
+    } catch(e) { showAlert('alert-kv', 'Không thể kết nối máy chủ', 'error'); }
+  }
+
+  function deleteKhuVuc(id, ten) {
+    confirm('🗑️', `Xóa khu vực "${ten}"?\nThao tác này không thể hoàn tác.`, async () => {
+      const res = await fetch(`${API}/admin/khu-vuc/${id}`, { method: 'DELETE', headers: authHeader() });
+      if (res.ok) {
+        loadKhuVuc();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Không thể xóa khu vực này');
+      }
+    });
+  }
+
+  // ── Bình tại vị trí ──────────────────────────────────────
+  let currentViTriId = null;
+
+  async function openBinhViTri(vtId, vtTen) {
+    currentViTriId = vtId;
+    document.getElementById('modal-bvt-subtitle').textContent = vtTen;
+    document.getElementById('alert-bvt').className = 'alert';
+
+    // Fill loại bình select
+    const sel = document.getElementById('bvt-loai');
+    sel.innerHTML = loaiBinhList.map(lb =>
+      `<option value="${lb.id}">${lb.ten_loai}</option>`
+    ).join('');
+
+    openModal('modal-binh-vi-tri');
+    await loadBinhHienCo(vtId);
+  }
+
+  async function loadBinhHienCo(vtId) {
+    const wrap = document.getElementById('binh-hien-co');
+    try {
+      const res  = await fetch(`${API}/admin/vi-tri/${vtId}/binh`, { headers: authHeader() });
+      const list = await res.json();
+
+      if (!list.length) {
+        wrap.innerHTML = `<p style="font-size:13px;color:var(--gray-400);padding:8px 0">Chưa có bình nào</p>`;
+        return;
+      }
+
+      wrap.innerHTML = list.map(b => {
+        // Tìm tên loại bình từ loaiBinhList đã load sẵn
+        const lb = loaiBinhList.find(x => x.id === b.loai_binh_id) || {};
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;
+          background:var(--gray-50);border-radius:8px;margin-bottom:6px">
+          <span style="font-size:16px">🧯</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${lb.ten_loai || '—'}</div>
+            <div style="font-size:11px;color:var(--gray-400)">${lb.ma_loai || b.loai_binh_id}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" value="${b.so_luong}" min="1"
+              style="width:56px;padding:5px 8px;border:1.5px solid var(--gray-200);
+              border-radius:6px;font-size:13px;text-align:center"
+              onchange="updateSoLuong('${b.id}', this.value, '${vtId}')">
+            <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)"
+              onclick="removeBinhViTri('${b.id}','${lb.ten_loai || b.loai_binh_id}','${vtId}')">Gỡ</button>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      wrap.innerHTML = `<p style="font-size:13px;color:var(--red)">Không thể tải dữ liệu</p>`;
+    }
+  }
+
+  async function addBinhViTri() {
+    const loaiBinhId = document.getElementById('bvt-loai').value;
+    const soLuong    = parseInt(document.getElementById('bvt-so-luong').value) || 1;
+    if (!loaiBinhId) return;
+    try {
+      const res = await fetch(`${API}/admin/vi-tri/${currentViTriId}/binh`, {
+        method: 'POST', headers: authHeader(),
+        body: JSON.stringify({ loai_binh_id: loaiBinhId, so_luong: soLuong }),
+      });
+      if (res.ok) {
+        document.getElementById('bvt-so-luong').value = 1;
+        await loadBinhHienCo(currentViTriId);
+        await loadViTri(); // refresh bảng vị trí
+      } else {
+        const err = await res.json();
+        showAlert('alert-bvt', err.detail || 'Loại bình đã tồn tại tại vị trí này', 'error');
+        document.getElementById('alert-bvt').classList.add('show');
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  async function updateSoLuong(binhId, soLuong, vtId) {
+    // Gỡ rồi thêm lại với số lượng mới — hoặc dùng API update nếu có
+    // Hiện tại API chưa có PUT so_luong → tạm thời reload
+    await loadBinhHienCo(vtId);
+  }
+
+  async function removeBinhViTri(binhId, tenLoai, vtId) {
+    confirm('🗑️', `Gỡ "${tenLoai}" khỏi vị trí này?`, async () => {
+      await fetch(`${API}/admin/vi-tri/${vtId}/binh/${binhId}`, {
+        method: 'DELETE', headers: authHeader(),
+      });
+      await loadBinhHienCo(vtId);
+      await loadViTri();
+    });
+  }
+
+  // ── Init app ─────────────────────────────────────────────
+  async function initApp() {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('sidebar-user-name').textContent = currentUser.ho_ten;
+    document.getElementById('sidebar-user-role').textContent =
+      currentUser.quyen === 'toan_quyen' ? 'Toàn quyền' : 'Bảo vệ';
+
+    // Load dữ liệu nền
+    try {
+      const [resKV, resLB] = await Promise.all([
+        fetch(`${API}/admin/khu-vuc`,    { headers: authHeader() }),
+        fetch(`${API}/admin/loai-binh`,  { headers: authHeader() }),
+      ]);
+      khuVucList   = await resKV.json();
+      loaiBinhList = await resLB.json();
+    } catch(e) {}
+
+    loadDashboard();
+  }
+
+  // ── Boot ────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('login-overlay').style.display !== 'none') doLogin();
+  });
+
+  if (loadSession()) initApp();
+</script>
+</body>
+</html>

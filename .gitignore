@@ -1,0 +1,17 @@
+# Environment — KHÔNG commit
+.env
+.env.production
+
+# Data volumes
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
