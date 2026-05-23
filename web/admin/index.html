@@ -6,6 +6,7 @@
   <title>PCCC Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="../assets/config.js"></script>
   <style>
     :root {
       --red:       #C8342A;
@@ -930,9 +931,6 @@
 </div>
 
 <script>
-  // ── Config ──────────────────────────────────────────────
-  const API = 'https://api-pccc.giavico.com.vn/api';
-
   // ── State ───────────────────────────────────────────────
   let authToken   = null;
   let currentUser = null;
@@ -985,7 +983,7 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Đang đăng nhập...';
     try {
-      const res  = await fetch(`${API}/auth/login`, {
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ma_nhan_vien: ma, mat_khau: mk }),
@@ -1012,7 +1010,7 @@
   }
 
   async function doLogout() {
-    try { await fetch(`${API}/auth/logout`, { method: 'POST', headers: authHeader() }); } catch(e) {}
+    try { await fetch(`${CONFIG.API_BASE_URL}/auth/logout`, { method: 'POST', headers: authHeader() }); } catch(e) {}
     clearSession(); location.reload();
   }
 
@@ -1066,7 +1064,7 @@
   // ── Dashboard ────────────────────────────────────────────
   async function loadDashboard() {
     try {
-      const res  = await fetch(`${API}/admin/thong-ke`, { headers: authHeader() });
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/admin/thong-ke`, { headers: authHeader() });
       const data = await res.json();
       document.getElementById('stat-vi-tri').textContent  = data.tong_vi_tri;
       document.getElementById('stat-da-kt').textContent   = data.phieu_thang_nay;
@@ -1080,8 +1078,8 @@
     // Load vị trí chưa kiểm tra
     try {
       const [resVT, resPhieu] = await Promise.all([
-        fetch(`${API}/admin/vi-tri`, { headers: authHeader() }),
-        fetch(`${API}/admin/thong-ke`, { headers: authHeader() }),
+        fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri`, { headers: authHeader() }),
+        fetch(`${CONFIG.API_BASE_URL}/admin/thong-ke`, { headers: authHeader() }),
       ]);
       const vtList = await resVT.json();
       const tbody  = document.getElementById('tbl-chua-kt');
@@ -1104,7 +1102,7 @@
   // ── Vị trí ──────────────────────────────────────────────
   async function loadViTri() {
     try {
-      const res    = await fetch(`${API}/admin/vi-tri`, { headers: authHeader() });
+      const res    = await fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri`, { headers: authHeader() });
       const vtList = await res.json();
       document.getElementById('vi-tri-count').textContent = `${vtList.length} vị trí`;
       const tbody = document.getElementById('tbl-vi-tri');
@@ -1171,7 +1169,7 @@
     if (!body.ten_vi_tri || !body.so_thu_tu) {
       showAlert('alert-vt', 'Vui lòng điền đầy đủ thông tin bắt buộc', 'error'); return;
     }
-    const url    = id ? `${API}/admin/vi-tri/${id}` : `${API}/admin/vi-tri`;
+    const url    = id ? `${CONFIG.API_BASE_URL}/admin/vi-tri/${id}` : `${CONFIG.API_BASE_URL}/admin/vi-tri`;
     const method = id ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
@@ -1186,7 +1184,7 @@
 
   function deleteViTri(id, ten) {
     confirm('🗑️', `Xóa vị trí "${ten}"?\nThao tác này không thể hoàn tác.`, async () => {
-      const res = await fetch(`${API}/admin/vi-tri/${id}`, { method: 'DELETE', headers: authHeader() });
+      const res = await fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri/${id}`, { method: 'DELETE', headers: authHeader() });
       if (res.ok) {
         loadViTri();
       } else {
@@ -1199,7 +1197,7 @@
   // ── Nhân viên ────────────────────────────────────────────
   async function loadNhanVien() {
     try {
-      const res    = await fetch(`${API}/admin/nhan-vien`, { headers: authHeader() });
+      const res    = await fetch(`${CONFIG.API_BASE_URL}/admin/nhan-vien`, { headers: authHeader() });
       const nvList = await res.json();
       document.getElementById('nv-count').textContent = `${nvList.length} nhân viên`;
       const tbody = document.getElementById('tbl-nhan-vien');
@@ -1267,7 +1265,7 @@
     if (!id && !body.mat_khau) {
       showAlert('alert-nv', 'Mật khẩu không được để trống khi tạo mới', 'error'); return;
     }
-    const url    = id ? `${API}/admin/nhan-vien/${id}` : `${API}/admin/nhan-vien`;
+    const url    = id ? `${CONFIG.API_BASE_URL}/admin/nhan-vien/${id}` : `${CONFIG.API_BASE_URL}/admin/nhan-vien`;
     const method = id ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
@@ -1285,11 +1283,11 @@
     const body = document.getElementById('tieu-chi-body');
     body.innerHTML = '<p style="color:var(--gray-400);font-size:13px">Đang tải...</p>';
     try {
-      const res  = await fetch(`${API}/admin/loai-binh`, { headers: authHeader() });
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/admin/loai-binh`, { headers: authHeader() });
       const list = await res.json();
 
       const htmlList = await Promise.all(list.map(async lb => {
-        const resTC = await fetch(`${API}/admin/loai-binh/${lb.id}/tieu-chi`, { headers: authHeader() });
+        const resTC = await fetch(`${CONFIG.API_BASE_URL}/admin/loai-binh/${lb.id}/tieu-chi`, { headers: authHeader() });
         const tcList = await resTC.json();
         return `
           <div style="margin-bottom:20px">
@@ -1383,7 +1381,7 @@
     if (!body.noi_dung || !body.stt) {
       showAlert('alert-tc', 'Vui lòng điền đầy đủ thông tin', 'error'); return;
     }
-    const url    = id ? `${API}/admin/tieu-chi/${id}` : `${API}/admin/loai-binh/${lbId}/tieu-chi`;
+    const url    = id ? `${CONFIG.API_BASE_URL}/admin/tieu-chi/${id}` : `${CONFIG.API_BASE_URL}/admin/loai-binh/${lbId}/tieu-chi`;
     const method = id ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
@@ -1399,7 +1397,7 @@
 
   function deleteTieuChi(id, noidung) {
     confirm('🗑️', `Xóa tiêu chí "${noidung}"?`, async () => {
-      await fetch(`${API}/admin/tieu-chi/${id}`, { method: 'DELETE', headers: authHeader() });
+      await fetch(`${CONFIG.API_BASE_URL}/admin/tieu-chi/${id}`, { method: 'DELETE', headers: authHeader() });
       loadTieuChi();
     });
   }
@@ -1433,7 +1431,7 @@
     btn.innerHTML = '<span class="spinner"></span> Đang lưu...';
 
     try {
-      const res = await fetch(`${API}/auth/doi-mat-khau`, {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/auth/doi-mat-khau`, {
         method: 'PUT',
         headers: { ...authHeader() },
         body: JSON.stringify({ mat_khau_cu: cu, mat_khau_moi: moi }),
@@ -1456,7 +1454,7 @@
   // ── Khu vực ─────────────────────────────────────────────────
   async function loadKhuVuc() {
     try {
-      const res    = await fetch(`${API}/admin/khu-vuc`, { headers: authHeader() });
+      const res    = await fetch(`${CONFIG.API_BASE_URL}/admin/khu-vuc`, { headers: authHeader() });
       khuVucList   = await res.json();
       document.getElementById('kv-count').textContent = `${khuVucList.length} khu vực`;
       const tbody = document.getElementById('tbl-khu-vuc');
@@ -1506,7 +1504,7 @@
     if (!body.ma_khu_vuc || !body.ten_khu_vuc) {
       showAlert('alert-kv', 'Vui lòng điền đầy đủ thông tin bắt buộc', 'error'); return;
     }
-    const url    = id ? `${API}/admin/khu-vuc/${id}` : `${API}/admin/khu-vuc`;
+    const url    = id ? `${CONFIG.API_BASE_URL}/admin/khu-vuc/${id}` : `${CONFIG.API_BASE_URL}/admin/khu-vuc`;
     const method = id ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(body) });
@@ -1522,7 +1520,7 @@
 
   function deleteKhuVuc(id, ten) {
     confirm('🗑️', `Xóa khu vực "${ten}"?\nThao tác này không thể hoàn tác.`, async () => {
-      const res = await fetch(`${API}/admin/khu-vuc/${id}`, { method: 'DELETE', headers: authHeader() });
+      const res = await fetch(`${CONFIG.API_BASE_URL}/admin/khu-vuc/${id}`, { method: 'DELETE', headers: authHeader() });
       if (res.ok) {
         loadKhuVuc();
       } else {
@@ -1553,7 +1551,7 @@
   async function loadBinhHienCo(vtId) {
     const wrap = document.getElementById('binh-hien-co');
     try {
-      const res  = await fetch(`${API}/admin/vi-tri/${vtId}/binh`, { headers: authHeader() });
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri/${vtId}/binh`, { headers: authHeader() });
       const list = await res.json();
 
       if (!list.length) {
@@ -1592,7 +1590,7 @@
     const soLuong    = parseInt(document.getElementById('bvt-so-luong').value) || 1;
     if (!loaiBinhId) return;
     try {
-      const res = await fetch(`${API}/admin/vi-tri/${currentViTriId}/binh`, {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri/${currentViTriId}/binh`, {
         method: 'POST', headers: authHeader(),
         body: JSON.stringify({ loai_binh_id: loaiBinhId, so_luong: soLuong }),
       });
@@ -1616,7 +1614,7 @@
 
   async function removeBinhViTri(binhId, tenLoai, vtId) {
     confirm('🗑️', `Gỡ "${tenLoai}" khỏi vị trí này?`, async () => {
-      await fetch(`${API}/admin/vi-tri/${vtId}/binh/${binhId}`, {
+      await fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri/${vtId}/binh/${binhId}`, {
         method: 'DELETE', headers: authHeader(),
       });
       await loadBinhHienCo(vtId);
@@ -1634,8 +1632,8 @@
     // Load dữ liệu nền
     try {
       const [resKV, resLB] = await Promise.all([
-        fetch(`${API}/admin/khu-vuc`,    { headers: authHeader() }),
-        fetch(`${API}/admin/loai-binh`,  { headers: authHeader() }),
+        fetch(`${CONFIG.API_BASE_URL}/admin/khu-vuc`,    { headers: authHeader() }),
+        fetch(`${CONFIG.API_BASE_URL}/admin/loai-binh`,  { headers: authHeader() }),
       ]);
       khuVucList   = await resKV.json();
       loaiBinhList = await resLB.json();

@@ -6,6 +6,7 @@
   <title>Thông tin vị trí PCCC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="assets/config.js"></script>
   <style>
     :root {
       --red:        #C8342A;
@@ -593,10 +594,6 @@
 </div>
 
 <script>
-  // ── Config ──────────────────────────────────────────────
-  const API = 'https://api-pccc.giavico.com.vn/api';
-  const WEB = 'https://pccc.giavico.com.vn';
-
   // ── State ───────────────────────────────────────────────
   let viTriId         = null;
   let lichSuData      = {};   // { year: [...phieu] }
@@ -726,7 +723,7 @@
   // ── Load lịch sử ────────────────────────────────────────
   async function loadLichSu(year) {
     try {
-      const res  = await fetch(`${API}/public/vi-tri/${viTriId}/lich-su?nam=${year}`);
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/public/vi-tri/${viTriId}/lich-su?nam=${year}`);
       const data = await res.json();
       lichSuData[year] = data.lich_su || [];
     } catch(e) { console.error(e); }
@@ -752,7 +749,7 @@
     setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
 
     try {
-      const res  = await fetch(`${API}/public/phieu/${phieuId}`);
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/public/phieu/${phieuId}`);
       const p    = await res.json();
 
       const badgeMap = {
@@ -826,7 +823,7 @@
     try {
       // Load thông tin vị trí + lịch sử song song
       const [resVT] = await Promise.all([
-        fetch(`${API}/public/vi-tri/${viTriId}`),
+        fetch(`${CONFIG.API_BASE_URL}/public/vi-tri/${viTriId}`),
         loadLichSu(curYear),
       ]);
 

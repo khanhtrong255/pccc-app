@@ -6,6 +6,7 @@
   <title>In mã QR - PCCC</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <script src="assets/config.js"></script>
   <style>
     :root {
       --red:     #C8342A;
@@ -165,8 +166,6 @@
 </div>
 
 <script>
-  const API     = 'https://api-pccc.giavico.com.vn/api';
-  const WEB     = 'https://pccc.giavico.com.vn';
   let allViTri  = [];
   let authToken = localStorage.getItem('pccc_admin_token');
 
@@ -183,7 +182,7 @@
     }
 
     try {
-      const res    = await fetch(`${API}/admin/vi-tri`, {
+      const res    = await fetch(`${CONFIG.API_BASE_URL}/admin/vi-tri`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
       if (!res.ok) throw new Error('Unauthorized');
@@ -273,7 +272,7 @@
       if (!el) return;
       try {
         new QRCode(el, {
-          text: `${WEB}/vi-tri/${v.id}`,
+          text: `${CONFIG.WEB_BASE_URL}/vi-tri/${v.id}`,
           width: qrSize, height: qrSize,
           colorDark: '#1C1B19', colorLight: '#FFFFFF',
           correctLevel: QRCode.CorrectLevel.M,

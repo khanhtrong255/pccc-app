@@ -6,6 +6,7 @@
   <title>Cập nhật kiểm tra PCCC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="assets/config.js"></script>
   <style>
     :root {
       --red:        #C8342A;
@@ -461,10 +462,6 @@
 </div>
 
 <script>
-  // ── Config ──────────────────────────────────────────────
-  const API = 'https://api-pccc.giavico.com.vn/api';
-  const WEB = 'https://pccc.giavico.com.vn';
-
   // ── State ───────────────────────────────────────────────
   let viTriId   = null;
   let phieuId   = null;
@@ -528,7 +525,7 @@
     setLoading('btn-login', true);
     hideAlert('alert-login');
     try {
-      const res  = await fetch(`${API}/auth/login`, {
+      const res  = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ma_nhan_vien: ma, mat_khau: mk }),
@@ -552,7 +549,7 @@
   // ── Logout ───────────────────────────────────────────────
   async function doLogout() {
     try {
-      await fetch(`${API}/auth/logout`, {
+      await fetch(`${CONFIG.API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
@@ -581,7 +578,7 @@
     try {
       // Load vị trí
       if (viTriId) {
-        const resVT = await fetch(`${API}/public/vi-tri/${viTriId}`);
+        const resVT = await fetch(`${CONFIG.API_BASE_URL}/public/vi-tri/${viTriId}`);
         if (resVT.ok) {
           const vt = await resVT.json();
           document.getElementById('vt-num').textContent  = `VỊ TRÍ #${vt.so_thu_tu}`;
@@ -593,7 +590,7 @@
         }
 
         // Load hoặc tạo phiếu tháng này
-        const resP = await fetch(`${API}/baotri/vi-tri/${viTriId}/phieu-thang-nay`, {
+        const resP = await fetch(`${CONFIG.API_BASE_URL}/baotri/vi-tri/${viTriId}/phieu-thang-nay`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -736,7 +733,7 @@
     }));
 
     try {
-      const res = await fetch(`${API}/baotri/phieu/${phieuId}`, {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/baotri/phieu/${phieuId}`, {
         method: 'PUT',
         headers: {
           'Content-Type':  'application/json',
@@ -852,7 +849,7 @@
     btn.innerHTML = '<span class="spinner"></span> Đang lưu...';
 
     try {
-      const res = await fetch(`${API}/auth/doi-mat-khau`, {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/auth/doi-mat-khau`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
