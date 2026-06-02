@@ -97,6 +97,44 @@ def get_or_create_phieu(
         db.commit()
         db.refresh(phieu)
 
+    else:
+        # Phiếu đã tồn tại — kiểm tra nếu có bình mới được gán sau
+        # thì tự động thêm tiêu chí còn thiếu
+        binh_list = db.query(BinhTaiViTri).filter(
+            BinhTaiViTri.vi_tri_id == vi_tri_id
+        ).all()
+
+        # Lấy các tieu_chi_id đã có trong phiếu
+        existing_tc_ids = set(
+            str(kq.tieu_chi_id)
+            for kq in db.query(KetQuaTieuChi).filter(
+                KetQuaTieuChi.phieu_id == phieu.id
+            ).all()
+        )
+
+        added = False
+        for binh in binh_list:
+            tieu_chi_list = db.query(TieuChi).filter(
+                TieuChi.loai_binh_id == binh.loai_binh_id,
+                TieuChi.is_active == True
+            ).order_by(TieuChi.stt).all()
+
+            for tc in tieu_chi_list:
+                if str(tc.id) not in existing_tc_ids:
+                    # Tiêu chí chưa có → thêm vào
+                    kq = KetQuaTieuChi(
+                        phieu_id=phieu.id,
+                        tieu_chi_id=tc.id,
+                        loai_binh_id=binh.loai_binh_id,
+                        ket_qua="chua_kiem_tra",
+                    )
+                    db.add(kq)
+                    added = True
+
+        if added:
+            db.commit()
+            db.refresh(phieu)
+
     # Trả về phiếu + kết quả nhóm theo loại bình
     ket_qua_list = db.query(KetQuaTieuChi).filter(
         KetQuaTieuChi.phieu_id == phieu.id
