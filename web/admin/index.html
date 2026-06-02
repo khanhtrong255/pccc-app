@@ -1122,6 +1122,7 @@
               <button class="btn btn-outline btn-sm" onclick="editViTri(${JSON.stringify(vt).replace(/"/g,'&quot;')})">Sửa</button>
               <button class="btn btn-outline btn-sm"
                 onclick="openBinhViTri('${vt.id}','${vt.ten_vi_tri}')">🧯 Bình</button>
+              <a class="btn btn-outline btn-sm" href="/vi-tri/${vt.id}" target="_blank">🔍 Xem QR</a>
               <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)"
                 onclick="deleteViTri('${vt.id}','${vt.ten_vi_tri}')">Xóa</button>
             </div>
