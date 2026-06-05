@@ -74,3 +74,11 @@ def require_toan_quyen(nv: NhanVien = Depends(get_current_user)) -> NhanVien:
             detail="Bạn không có quyền thực hiện thao tác này"
         )
     return nv
+
+def require_xem_hoac_toan_quyen(nv: NhanVien = Depends(get_current_user)) -> NhanVien:
+    if nv.quyen not in ("toan_quyen", "xem"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Ban khong co quyen truy cap"
+        )
+    return nv

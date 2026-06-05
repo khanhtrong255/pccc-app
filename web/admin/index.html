@@ -475,20 +475,20 @@
       <span class="nav-icon">📊</span> Dashboard
     </a>
     <div class="nav-section-label" style="margin-top:8px">Quản lý</div>
-    <a class="nav-item" href="#" onclick="showPage('khu-vuc')">
+    <a class="nav-item admin-only" href="#" onclick="showPage('khu-vuc')">
       <span class="nav-icon">🗂️</span> Khu vực
     </a>
     <a class="nav-item" href="#" onclick="showPage('vi-tri')">
       <span class="nav-icon">📍</span> Vị trí
     </a>
-    <a class="nav-item" href="#" onclick="showPage('nhan-vien')">
+    <a class="nav-item admin-only" href="#" onclick="showPage('nhan-vien')">
       <span class="nav-icon">👷</span> Nhân viên
     </a>
-    <a class="nav-item" href="#" onclick="showPage('tieu-chi')">
+    <a class="nav-item admin-only" href="#" onclick="showPage('tieu-chi')">
       <span class="nav-icon">✅</span> Tiêu chí kiểm tra
     </a>
     <div class="nav-section-label" style="margin-top:8px">Khác</div>
-    <a class="nav-item" href="/print-qr.html" target="_blank">
+    <a class="nav-item admin-only" href="/print-qr.html" target="_blank">
       <span class="nav-icon">🖨️</span> In mã QR
     </a>
   </nav>
@@ -583,7 +583,7 @@
           <div class="card-title">Danh sách vị trí</div>
           <div class="card-sub" id="vi-tri-count">—</div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="openModalViTri()">+ Thêm vị trí</button>
+        <button class="btn btn-primary btn-sm admin-only" onclick="openModalViTri()">+ Thêm vị trí</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -594,7 +594,8 @@
               <th>Khu vực</th>
               <th>Loại bình</th>
               <th>Trạng thái</th>
-              <th>Thao tác</th>
+              <th>Tháng này</th>
+	      <th>Thao tác</th>
             </tr>
           </thead>
           <tbody id="tbl-vi-tri"></tbody>
@@ -828,6 +829,7 @@
           <label class="form-label">Quyền</label>
           <select id="nv-quyen" class="form-select">
             <option value="cap_nhat">Bảo vệ (chỉ cập nhật)</option>
+            <option value="xem">Xem (chỉ xem)</option>
             <option value="toan_quyen">Toàn quyền</option>
           </select>
         </div>
@@ -994,7 +996,7 @@
         btn.disabled = false; btn.innerHTML = 'Đăng nhập';
         return;
       }
-      if (data.quyen !== 'toan_quyen') {
+      if (!['toan_quyen', 'xem'].includes(data.quyen)) {
         showAlert('alert-login', 'Tài khoản không có quyền truy cập trang quản trị', 'error');
         btn.disabled = false; btn.innerHTML = 'Đăng nhập';
         return;
@@ -1106,6 +1108,7 @@
       const vtList = await res.json();
       document.getElementById('vi-tri-count').textContent = `${vtList.length} vị trí`;
       const tbody = document.getElementById('tbl-vi-tri');
+      const isAdmin  = currentUser.quyen === 'toan_quyen';
       tbody.innerHTML = vtList.map(vt => `
         <tr>
           <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gray-400)">#${vt.so_thu_tu}</span></td>
@@ -1118,13 +1121,20 @@
             </span>
           </td>
           <td>
+            ${(() => {
+              const kt = vt.kiem_tra_thang_nay;
+              if (!kt || !kt.trang_thai) return '<span class="badge badge-red">⚠️ Chưa KT</span>';
+              if (kt.trang_thai === 'dat_het') return '<span class="badge badge-green">✅ Đạt hết</span>';
+              if (kt.trang_thai === 'co_khong_dat') return '<span class="badge badge-yellow">⚠️ Có không đạt</span>';
+              return '<span class="badge badge-gray">📋 Chưa hoàn thành</span>';
+            })()}
+          </td>          
+          <td>
             <div style="display:flex;gap:6px">
-              <button class="btn btn-outline btn-sm" onclick="editViTri(${JSON.stringify(vt).replace(/"/g,'&quot;')})">Sửa</button>
-              <button class="btn btn-outline btn-sm"
-                onclick="openBinhViTri('${vt.id}','${vt.ten_vi_tri}')">🧯 Bình</button>
+              ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="editViTri(${JSON.stringify(vt).replace(/"/g,'&quot;')})">Sửa</button>` : ''}
+              ${isAdmin ? `<button class="btn btn-outline btn-sm" onclick="openBinhViTri('${vt.id}','${vt.ten_vi_tri}')">🧯 Bình</button>` : ''}
               <a class="btn btn-outline btn-sm" href="/vi-tri/${vt.id}" target="_blank">🔍 Xem QR</a>
-              <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)"
-                onclick="deleteViTri('${vt.id}','${vt.ten_vi_tri}')">Xóa</button>
+              ${isAdmin ? `<button class="btn btn-sm" style="background:var(--red-light);color:var(--red)" onclick="deleteViTri('${vt.id}','${vt.ten_vi_tri}')">Xóa</button>` : ''}
             </div>
           </td>
         </tr>
@@ -1207,8 +1217,8 @@
           <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${nv.ma_nhan_vien}</span></td>
           <td style="font-weight:500">${nv.ho_ten}</td>
           <td>
-            <span class="badge ${nv.quyen === 'toan_quyen' ? 'badge-blue' : 'badge-gray'}">
-              ${nv.quyen === 'toan_quyen' ? 'Toàn quyền' : 'Bảo vệ'}
+            <span class="badge ${nv.quyen === 'toan_quyen' ? 'badge-blue' : nv.quyen === 'xem' ? 'badge-yellow' : 'badge-gray'}">
+              ${nv.quyen === 'toan_quyen' ? 'Toàn quyền' : nv.quyen === 'xem' ? 'Xem' : 'Bảo vệ'}
             </span>
           </td>
           <td>
@@ -1628,7 +1638,13 @@
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('sidebar-user-name').textContent = currentUser.ho_ten;
     document.getElementById('sidebar-user-role').textContent =
-      currentUser.quyen === 'toan_quyen' ? 'Toàn quyền' : 'Bảo vệ';
+      currentUser.quyen === 'toan_quyen' ? 'Toàn quyền' : 
+      currentUser.quyen === 'xem' ? 'Xem' : 'Bảo vệ';
+
+    // Ẩn các phần tử chỉ dành cho admin
+    if (currentUser.quyen !== 'toan_quyen') {
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+    }
 
     // Load dữ liệu nền
     try {

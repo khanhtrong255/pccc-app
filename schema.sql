@@ -374,3 +374,147 @@ INSERT INTO binh_tai_vi_tri (vi_tri_id, loai_binh_id, so_luong)
 SELECT v.id, lb.id, 1
 FROM vi_tri v, loai_binh lb
 WHERE v.so_thu_tu = 5 AND lb.ma_loai IN ('Bot_MFZ8', 'MFZT35');
+
+-- ============================================================
+-- MIGRATION: THIẾT BỊ PCCC (Hộp vòi, Hộp phá dỡ, Trạm bơm)
+-- ============================================================
+
+-- 10. THIẾT BỊ PCCC
+CREATE TABLE thiet_bi_pccc (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    loai         VARCHAR(20) NOT NULL CHECK (loai IN ('hop_voi','hop_pha_do','tram_bom')),
+    so_thu_tu    INT NOT NULL,
+    khu_vuc_id   UUID REFERENCES khu_vuc(id) ON DELETE SET NULL,
+    mo_ta        TEXT,
+    qr_code      TEXT UNIQUE,
+    trang_thai   VARCHAR(20) NOT NULL DEFAULT 'hoat_dong'
+                 CHECK (trang_thai IN ('hoat_dong','ngung')),
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (loai, so_thu_tu)
+);
+
+CREATE INDEX idx_thiet_bi_loai    ON thiet_bi_pccc(loai);
+CREATE INDEX idx_thiet_bi_khu_vuc ON thiet_bi_pccc(khu_vuc_id);
+
+CREATE TRIGGER trg_thiet_bi_updated_at
+    BEFORE UPDATE ON thiet_bi_pccc
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- 11. TIÊU CHÍ THIẾT BỊ PCCC
+CREATE TABLE tieu_chi_thiet_bi (
+    id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    loai      VARCHAR(20) NOT NULL CHECK (loai IN ('hop_voi','hop_pha_do','tram_bom')),
+    stt       INT NOT NULL,
+    noi_dung  TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    UNIQUE (loai, stt)
+);
+
+-- 12. PHIẾU KIỂM TRA THIẾT BỊ PCCC
+CREATE TABLE phieu_kiem_tra_tb (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    thiet_bi_id     UUID NOT NULL REFERENCES thiet_bi_pccc(id) ON DELETE RESTRICT,
+    thang           INT NOT NULL CHECK (thang BETWEEN 1 AND 12),
+    nam             INT NOT NULL,
+    ngay_kiem_tra   DATE,
+    nguoi_kiem_tra  UUID REFERENCES nhan_vien(id) ON DELETE SET NULL,
+    trang_thai      VARCHAR(20) NOT NULL DEFAULT 'chua_hoan_thanh'
+                    CHECK (trang_thai IN ('chua_hoan_thanh','dat_het','co_khong_dat')),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (thiet_bi_id, thang, nam)
+);
+
+CREATE INDEX idx_phieu_tb_thiet_bi  ON phieu_kiem_tra_tb(thiet_bi_id);
+CREATE INDEX idx_phieu_tb_thang_nam ON phieu_kiem_tra_tb(thang, nam);
+
+CREATE TRIGGER trg_phieu_tb_updated_at
+    BEFORE UPDATE ON phieu_kiem_tra_tb
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- 13. KẾT QUẢ TIÊU CHÍ THIẾT BỊ PCCC
+CREATE TABLE ket_qua_tb (
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phieu_id         UUID NOT NULL REFERENCES phieu_kiem_tra_tb(id) ON DELETE CASCADE,
+    tieu_chi_id      UUID NOT NULL REFERENCES tieu_chi_thiet_bi(id) ON DELETE RESTRICT,
+    ket_qua          VARCHAR(20) CHECK (ket_qua IN ('dat','khong_dat')),
+    bien_phap        TEXT,
+    ngay_hoan_thanh  DATE,
+    UNIQUE (phieu_id, tieu_chi_id)
+);
+
+CREATE INDEX idx_ket_qua_tb_phieu ON ket_qua_tb(phieu_id);
+
+CREATE OR REPLACE FUNCTION recalc_phieu_tb_stats()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_phieu_id   UUID;
+    v_tong       INTEGER;
+    v_dat        INTEGER;
+    v_trang_thai VARCHAR(20);
+BEGIN
+    v_phieu_id := COALESCE(NEW.phieu_id, OLD.phieu_id);
+
+    SELECT COUNT(*), COUNT(*) FILTER (WHERE ket_qua = 'dat')
+    INTO v_tong, v_dat
+    FROM ket_qua_tb
+    WHERE phieu_id = v_phieu_id;
+
+    IF v_tong = 0 OR v_dat = 0 THEN
+        v_trang_thai := 'chua_hoan_thanh';
+    ELSIF v_dat = v_tong THEN
+        v_trang_thai := 'dat_het';
+    ELSE
+        v_trang_thai := 'co_khong_dat';
+    END IF;
+
+    UPDATE phieu_kiem_tra_tb
+    SET trang_thai = v_trang_thai,
+        updated_at = NOW()
+    WHERE id = v_phieu_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_recalc_tb_stats
+    AFTER INSERT OR UPDATE OR DELETE ON ket_qua_tb
+    FOR EACH ROW EXECUTE FUNCTION recalc_phieu_tb_stats();
+
+-- INSERT tiêu chí — Hộp vòi (8 tiêu chí)
+INSERT INTO tieu_chi_thiet_bi (loai, stt, noi_dung) VALUES
+('hop_voi', 1, 'Hộp chữa cháy sạch sẽ, không bị che khuất'),
+('hop_voi', 2, 'Kính, cửa hộp, tay khóa còn nguyên vẹn'),
+('hop_voi', 3, 'Có đầy đủ lăng phun, vòi chữa cháy'),
+('hop_voi', 4, 'Vòi chữa cháy xếp gọn, không rách, mục, hư hỏng'),
+('hop_voi', 5, 'Van chữa cháy đóng/mở bình thường, không rò rỉ'),
+('hop_voi', 6, 'Tem/biển chỉ dẫn PCCC đầy đủ, dễ nhận biết'),
+('hop_voi', 7, 'Khu vực xung quanh đảm bảo lối tiếp cận ≥ 1 m'),
+('hop_voi', 8, 'Thực hiện xả nước kiểm tra định kỳ (nếu có kế hoạch)');
+
+-- INSERT tiêu chí — Hộp phá dỡ (8 tiêu chí)
+INSERT INTO tieu_chi_thiet_bi (loai, stt, noi_dung) VALUES
+('hop_pha_do', 1, 'Hộp đựng dụng cụ sạch sẽ, không bị che khuất'),
+('hop_pha_do', 2, 'Có đầy đủ búa phá dỡ'),
+('hop_pha_do', 3, 'Có đầy đủ rìu'),
+('hop_pha_do', 4, 'Có đầy đủ kiềm cộng lực'),
+('hop_pha_do', 5, 'Có đầy đủ xà beng'),
+('hop_pha_do', 6, 'Có đầy đủ cưa cắt sắt'),
+('hop_pha_do', 7, 'Có đầy đủ xà beng nhổ đinh'),
+('hop_pha_do', 8, 'Dụng cụ không bị rỉ sét, cong gãy, hư hỏng');
+
+-- INSERT tiêu chí — Trạm bơm (11 tiêu chí)
+INSERT INTO tieu_chi_thiet_bi (loai, stt, noi_dung) VALUES
+('tram_bom', 1,  'Khu vực trạm bơm sạch sẽ, không cản trở thao tác'),
+('tram_bom', 2,  'Không có rò rỉ dầu, nước tại máy bơm và đường ống'),
+('tram_bom', 3,  'Đồng hồ áp lực hoạt động bình thường'),
+('tram_bom', 4,  'Tủ điện, đèn báo, CB hoạt động bình thường'),
+('tram_bom', 5,  'Mức nhiên liệu máy bơm Diezel đảm bảo'),
+('tram_bom', 6,  'Bình ắc quy máy Diezel hoạt động bình thường'),
+('tram_bom', 7,  'Khởi động máy bơm Diezel số 1 bình thường'),
+('tram_bom', 8,  'Khởi động máy bơm Diezel số 2 bình thường'),
+('tram_bom', 9,  'Mô tơ bơm điện hoạt động bình thường'),
+('tram_bom', 10, 'Mô tơ bơm bù áp hoạt động bình thường'),
+('tram_bom', 11, 'Âm thanh, rung động khi chạy máy bình thường');
+

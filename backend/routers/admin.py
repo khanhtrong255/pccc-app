@@ -9,7 +9,7 @@ from models import (
     KhuVuc, ViTri, LoaiBinh, BinhTaiViTri,
     TieuChi, NhanVien, PhieuKiemTra
 )
-from security import require_toan_quyen, hash_password
+from security import require_toan_quyen, require_xem_hoac_toan_quyen, hash_password
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ router = APIRouter()
 # ── KHU VỰC ─────────────────────────────────────────────────
 
 @router.get("/khu-vuc")
-def list_khu_vuc(db: Session = Depends(get_db), _=Depends(require_toan_quyen)):
+def list_khu_vuc(db: Session = Depends(get_db), _=Depends(require_xem_hoac_toan_quyen)):
     return db.query(KhuVuc).order_by(KhuVuc.ma_khu_vuc).all()
 
 
@@ -62,10 +62,26 @@ def delete_khu_vuc(kv_id: str, db: Session = Depends(get_db), _=Depends(require_
 # ── VỊ TRÍ ──────────────────────────────────────────────────
 
 @router.get("/vi-tri")
-def list_vi_tri(db: Session = Depends(get_db), _=Depends(require_toan_quyen)):
+def list_vi_tri(db: Session = Depends(get_db), _=Depends(require_xem_hoac_toan_quyen)):
+    from datetime import date
+    today = date.today()
+    thang = today.month
+    nam   = today.year
+
     vt_list = db.query(ViTri).order_by(ViTri.so_thu_tu).all()
+
+    # Lấy tất cả phiếu tháng này 1 lần — tránh N+1 query
+    phieu_thang = {
+        str(p.vi_tri_id): p
+        for p in db.query(PhieuKiemTra).filter(
+            PhieuKiemTra.thang == thang,
+            PhieuKiemTra.nam   == nam,
+        ).all()
+    }
+
     result = []
     for vt in vt_list:
+        phieu = phieu_thang.get(str(vt.id))
         result.append({
             "id": str(vt.id),
             "so_thu_tu": vt.so_thu_tu,
@@ -77,6 +93,10 @@ def list_vi_tri(db: Session = Depends(get_db), _=Depends(require_toan_quyen)):
                 "ten": vt.khu_vuc.ten_khu_vuc if vt.khu_vuc else None,
             },
             "so_loai_binh": len(vt.binh_list),
+            "kiem_tra_thang_nay": {
+                "trang_thai": phieu.trang_thai if phieu else None,
+                "ngay_kiem_tra": phieu.ngay_kiem_tra.isoformat() if phieu and phieu.ngay_kiem_tra else None,
+            }
         })
     return result
 
@@ -171,7 +191,7 @@ def remove_binh_vi_tri(vt_id: str, binh_id: str, db: Session = Depends(get_db), 
 # ── LOẠI BÌNH & TIÊU CHÍ ────────────────────────────────────
 
 @router.get("/loai-binh")
-def list_loai_binh(db: Session = Depends(get_db), _=Depends(require_toan_quyen)):
+def list_loai_binh(db: Session = Depends(get_db), _=Depends(require_xem_hoac_toan_quyen)):
     return db.query(LoaiBinh).order_by(LoaiBinh.ten_loai).all()
 
 
@@ -221,7 +241,7 @@ def delete_tieu_chi(tc_id: str, db: Session = Depends(get_db), _=Depends(require
 # ── NHÂN VIÊN ────────────────────────────────────────────────
 
 @router.get("/nhan-vien")
-def list_nhan_vien(db: Session = Depends(get_db), _=Depends(require_toan_quyen)):
+def list_nhan_vien(db: Session = Depends(get_db), _=Depends(require_xem_hoac_toan_quyen)):
     nv_list = db.query(NhanVien).order_by(NhanVien.ho_ten).all()
     return [
         {
@@ -288,7 +308,7 @@ def delete_nhan_vien(nv_id: str, db: Session = Depends(get_db), _=Depends(requir
 # ── THỐNG KÊ DASHBOARD ──────────────────────────────────────
 
 @router.get("/thong-ke")
-def thong_ke(db: Session = Depends(get_db), _=Depends(require_toan_quyen)):
+def thong_ke(db: Session = Depends(get_db), _=Depends(require_xem_hoac_toan_quyen)):
     from datetime import date
     today = date.today()
 

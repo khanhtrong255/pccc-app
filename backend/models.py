@@ -144,3 +144,64 @@ class RefreshToken(Base):
     created_at   = Column(DateTime(timezone=True), server_default=func.now())
 
     nhan_vien = relationship("NhanVien", back_populates="refresh_tokens")
+
+
+class ThietBiPCCC(Base):
+    __tablename__ = "thiet_bi_pccc"
+    __table_args__ = (UniqueConstraint("loai", "so_thu_tu"),)
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    loai        = Column(String(20), nullable=False)
+    so_thu_tu   = Column(Integer, nullable=False)
+    khu_vuc_id  = Column(UUID(as_uuid=True), ForeignKey("khu_vuc.id", ondelete="SET NULL"))
+    mo_ta       = Column(Text)
+    qr_code     = Column(Text, unique=True)
+    trang_thai  = Column(String(20), nullable=False, default="hoat_dong")
+    created_at  = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at  = Column(DateTime(timezone=True), server_default=func.now())
+
+    khu_vuc     = relationship("KhuVuc")
+    phieu_list  = relationship("PhieuKiemTraTB", back_populates="thiet_bi", cascade="all, delete-orphan")
+
+
+class TieuChiThietBi(Base):
+    __tablename__ = "tieu_chi_thiet_bi"
+    __table_args__ = (UniqueConstraint("loai", "stt"),)
+    id        = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    loai      = Column(String(20), nullable=False)
+    stt       = Column(Integer, nullable=False)
+    noi_dung  = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True)
+
+    ket_qua_list = relationship("KetQuaTB", back_populates="tieu_chi")
+
+
+class PhieuKiemTraTB(Base):
+    __tablename__ = "phieu_kiem_tra_tb"
+    __table_args__ = (UniqueConstraint("thiet_bi_id", "thang", "nam"),)
+    id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    thiet_bi_id     = Column(UUID(as_uuid=True), ForeignKey("thiet_bi_pccc.id", ondelete="RESTRICT"), nullable=False)
+    thang           = Column(Integer, nullable=False)
+    nam             = Column(Integer, nullable=False)
+    ngay_kiem_tra   = Column(Date)
+    nguoi_kiem_tra  = Column(UUID(as_uuid=True), ForeignKey("nhan_vien.id", ondelete="SET NULL"))
+    trang_thai      = Column(String(20), nullable=False, default="chua_hoan_thanh")
+    created_at      = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at      = Column(DateTime(timezone=True), server_default=func.now())
+
+    thiet_bi    = relationship("ThietBiPCCC", back_populates="phieu_list")
+    nhan_vien   = relationship("NhanVien")
+    ket_qua_list = relationship("KetQuaTB", back_populates="phieu", cascade="all, delete-orphan")
+
+
+class KetQuaTB(Base):
+    __tablename__ = "ket_qua_tb"
+    __table_args__ = (UniqueConstraint("phieu_id", "tieu_chi_id"),)
+    id               = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    phieu_id         = Column(UUID(as_uuid=True), ForeignKey("phieu_kiem_tra_tb.id", ondelete="CASCADE"), nullable=False)
+    tieu_chi_id      = Column(UUID(as_uuid=True), ForeignKey("tieu_chi_thiet_bi.id", ondelete="RESTRICT"), nullable=False)
+    ket_qua          = Column(String(20))
+    bien_phap        = Column(Text)
+    ngay_hoan_thanh  = Column(Date)
+
+    phieu    = relationship("PhieuKiemTraTB", back_populates="ket_qua_list")
+    tieu_chi = relationship("TieuChiThietBi", back_populates="ket_qua_list")
