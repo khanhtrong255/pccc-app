@@ -39,7 +39,6 @@ app.include_router(public.router, prefix="/api/public", tags=["Public"])
 app.include_router(baotri.router, prefix="/api/baotri", tags=["Bảo trì"])
 app.include_router(admin.router,  prefix="/api/admin",  tags=["Admin"])
 
-
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "2.0.0"}

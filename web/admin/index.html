@@ -1012,6 +1012,7 @@
   }
 
   async function doLogout() {
+    stopIdleWatcher();
     try { await fetch(`${CONFIG.API_BASE_URL}/auth/logout`, { method: 'POST', headers: authHeader() }); } catch(e) {}
     clearSession(); location.reload();
   }
@@ -1657,6 +1658,40 @@
     } catch(e) {}
 
     loadDashboard();
+    startIdleWatcher();
+  }
+
+  // ── Idle timeout (30 phút) ──────────────────────────────
+  const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 phút
+  let idleTimer = null;
+ 
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      // Hết 30 phút không hoạt động → tự logout
+      clearSession();
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('sidebar').classList.remove('open');
+      // Hiện thông báo
+      const alertEl = document.getElementById('alert-login');
+      alertEl.className = 'alert alert-error show';
+      alertEl.textContent = 'Phiên làm việc đã hết hạn do không hoạt động. Vui lòng đăng nhập lại.';
+    }, IDLE_TIMEOUT);
+  }
+ 
+  function startIdleWatcher() {
+    // Reset timer khi có hoạt động
+    ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+      document.addEventListener(evt, resetIdleTimer, { passive: true });
+    });
+    resetIdleTimer();
+  }
+ 
+  function stopIdleWatcher() {
+    clearTimeout(idleTimer);
+    ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+      document.removeEventListener(evt, resetIdleTimer);
+    });
   }
 
   // ── Boot ────────────────────────────────────────────────

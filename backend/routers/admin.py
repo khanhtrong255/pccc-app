@@ -13,7 +13,6 @@ from security import require_toan_quyen, require_xem_hoac_toan_quyen, hash_passw
 
 router = APIRouter()
 
-
 # ── KHU VỰC ─────────────────────────────────────────────────
 
 @router.get("/khu-vuc")

@@ -91,7 +91,6 @@ def get_thiet_bi_info(thiet_bi_id: str, db: Session = Depends(get_db)):
         ],
     }
 
-
 @router.post("/public/thiet-bi/{thiet_bi_id}/kiem-tra")
 def bat_dau_kiem_tra(
     thiet_bi_id: str,
