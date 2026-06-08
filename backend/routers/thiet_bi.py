@@ -210,7 +210,7 @@ def list_thiet_bi(
     khu_vuc_id: Optional[str] = Query(None),
     trang_thai: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=500),
     db: Session = Depends(get_db),
     current_user=Depends(require_toan_quyen),
 ):
