@@ -7,9 +7,12 @@ import uuid
 
 from database import get_db
 from models import ThietBiPCCC, TieuChiThietBi, PhieuKiemTraTB, KetQuaTB, KhuVuc, NhanVien
-from security import get_current_user, require_quyen
+# from security import get_current_user, require_quyen
+from security import get_current_user, require_toan_quyen
 
-router = APIRouter()
+# router = APIRouter()
+public_router = APIRouter()
+admin_router  = APIRouter()
 
 LOAI_LABEL = {
     "hop_voi":   "Hộp vòi chữa cháy",
@@ -57,7 +60,7 @@ def get_or_create_phieu(thiet_bi_id: str, nhan_vien_id: str, db: Session):
 # PUBLIC ENDPOINTS (scan QR)
 # ══════════════════════════════════════════════════════════════
 
-@router.get("/public/thiet-bi/{thiet_bi_id}")
+@public_router.get("/public/thiet-bi/{thiet_bi_id}")
 def get_thiet_bi_info(thiet_bi_id: str, db: Session = Depends(get_db)):
     tb = db.query(ThietBiPCCC).filter_by(id=thiet_bi_id).first()
     if not tb:
@@ -91,7 +94,7 @@ def get_thiet_bi_info(thiet_bi_id: str, db: Session = Depends(get_db)):
         ],
     }
 
-@router.post("/public/thiet-bi/{thiet_bi_id}/kiem-tra")
+@public_router.post("/public/thiet-bi/{thiet_bi_id}/kiem-tra")
 def bat_dau_kiem_tra(
     thiet_bi_id: str,
     db: Session = Depends(get_db),
@@ -135,7 +138,7 @@ def bat_dau_kiem_tra(
     }
 
 
-@router.put("/public/ket-qua-tb/{ket_qua_id}")
+@public_router.put("/public/ket-qua-tb/{ket_qua_id}")
 def cap_nhat_ket_qua(
     ket_qua_id: str,
     body: dict,
@@ -157,7 +160,7 @@ def cap_nhat_ket_qua(
     return {"ok": True}
 
 
-@router.get("/public/phieu-tb/{phieu_id}")
+@public_router.get("/public/phieu-tb/{phieu_id}")
 def get_chi_tiet_phieu(phieu_id: str, db: Session = Depends(get_db)):
     phieu = db.query(PhieuKiemTraTB).get(uuid.UUID(phieu_id))
     if not phieu:
@@ -201,7 +204,7 @@ def get_chi_tiet_phieu(phieu_id: str, db: Session = Depends(get_db)):
 # ADMIN ENDPOINTS
 # ══════════════════════════════════════════════════════════════
 
-@router.get("/admin/thiet-bi")
+@admin_router.get("/admin/thiet-bi")
 def list_thiet_bi(
     loai: Optional[str] = Query(None),
     khu_vuc_id: Optional[str] = Query(None),
@@ -209,7 +212,7 @@ def list_thiet_bi(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
-    current_user=Depends(require_quyen("toan_quyen")),
+    current_user=Depends(require_toan_quyen),
 ):
     q = db.query(ThietBiPCCC)
     if loai:
@@ -249,11 +252,11 @@ def list_thiet_bi(
     }
 
 
-@router.post("/admin/thiet-bi")
+@admin_router.post("/admin/thiet-bi")
 def create_thiet_bi(
     body: dict,
     db: Session = Depends(get_db),
-    current_user=Depends(require_quyen("toan_quyen")),
+    current_user=Depends(require_toan_quyen),
 ):
     loai = body.get("loai")
     if loai not in LOAI_LABEL:
@@ -280,12 +283,12 @@ def create_thiet_bi(
     return {"id": str(tb.id), "qr_code": tb.qr_code}
 
 
-@router.put("/admin/thiet-bi/{thiet_bi_id}")
+@admin_router.put("/admin/thiet-bi/{thiet_bi_id}")
 def update_thiet_bi(
     thiet_bi_id: str,
     body: dict,
     db: Session = Depends(get_db),
-    current_user=Depends(require_quyen("toan_quyen")),
+    current_user=Depends(require_toan_quyen),
 ):
     tb = db.query(ThietBiPCCC).get(uuid.UUID(thiet_bi_id))
     if not tb:
@@ -304,11 +307,11 @@ def update_thiet_bi(
     return {"ok": True}
 
 
-@router.delete("/admin/thiet-bi/{thiet_bi_id}")
+@admin_router.delete("/admin/thiet-bi/{thiet_bi_id}")
 def delete_thiet_bi(
     thiet_bi_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(require_quyen("toan_quyen")),
+    current_user=Depends(require_toan_quyen),
 ):
     tb = db.query(ThietBiPCCC).get(uuid.UUID(thiet_bi_id))
     if not tb:

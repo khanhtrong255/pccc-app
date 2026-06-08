@@ -338,3 +338,6 @@ def thong_ke(db: Session = Depends(get_db), _=Depends(require_xem_hoac_toan_quye
         "thang": today.month,
         "nam": today.year,
     }
+
+from routers.thiet_bi import admin_router
+router.include_router(admin_router)

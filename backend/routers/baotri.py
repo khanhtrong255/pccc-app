@@ -14,7 +14,6 @@ from security import get_current_user
 
 router = APIRouter()
 
-
 class KetQuaItem(BaseModel):
     tieu_chi_id: str
     loai_binh_id: str

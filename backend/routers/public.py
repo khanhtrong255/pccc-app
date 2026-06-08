@@ -7,7 +7,6 @@ from models import ViTri, KhuVuc, BinhTaiViTri, LoaiBinh, PhieuKiemTra, KetQuaTi
 
 router = APIRouter()
 
-
 @router.get("/vi-tri/{vi_tri_id}")
 def get_vi_tri(vi_tri_id: str, db: Session = Depends(get_db)):
     """Lấy thông tin vị trí — dùng cho trang QR public"""
@@ -122,3 +121,6 @@ def get_phieu_chi_tiet(phieu_id: str, db: Session = Depends(get_db)):
         "ten_nhan_vien": p.nhan_vien.ho_ten if p.nhan_vien else None,
         "ket_qua_theo_loai": list(nhom.values()),
     }
+
+from routers.thiet_bi import public_router
+router.include_router(public_router)
