@@ -60,7 +60,7 @@ def get_or_create_phieu(thiet_bi_id: str, nhan_vien_id: str, db: Session):
 # PUBLIC ENDPOINTS (scan QR)
 # ══════════════════════════════════════════════════════════════
 
-@public_router.get("/public/thiet-bi/{thiet_bi_id}")
+@public_router.get("/thiet-bi/{thiet_bi_id}")
 def get_thiet_bi_info(thiet_bi_id: str, db: Session = Depends(get_db)):
     tb = db.query(ThietBiPCCC).filter_by(id=thiet_bi_id).first()
     if not tb:
@@ -94,7 +94,7 @@ def get_thiet_bi_info(thiet_bi_id: str, db: Session = Depends(get_db)):
         ],
     }
 
-@public_router.post("/public/thiet-bi/{thiet_bi_id}/kiem-tra")
+@public_router.post("/thiet-bi/{thiet_bi_id}/kiem-tra")
 def bat_dau_kiem_tra(
     thiet_bi_id: str,
     db: Session = Depends(get_db),
@@ -138,7 +138,7 @@ def bat_dau_kiem_tra(
     }
 
 
-@public_router.put("/public/ket-qua-tb/{ket_qua_id}")
+@public_router.put("/ket-qua-tb/{ket_qua_id}")
 def cap_nhat_ket_qua(
     ket_qua_id: str,
     body: dict,
@@ -160,7 +160,7 @@ def cap_nhat_ket_qua(
     return {"ok": True}
 
 
-@public_router.get("/public/phieu-tb/{phieu_id}")
+@public_router.get("/phieu-tb/{phieu_id}")
 def get_chi_tiet_phieu(phieu_id: str, db: Session = Depends(get_db)):
     phieu = db.query(PhieuKiemTraTB).get(uuid.UUID(phieu_id))
     if not phieu:
@@ -204,7 +204,7 @@ def get_chi_tiet_phieu(phieu_id: str, db: Session = Depends(get_db)):
 # ADMIN ENDPOINTS
 # ══════════════════════════════════════════════════════════════
 
-@admin_router.get("/admin/thiet-bi")
+@admin_router.get("/thiet-bi")
 def list_thiet_bi(
     loai: Optional[str] = Query(None),
     khu_vuc_id: Optional[str] = Query(None),
@@ -252,7 +252,7 @@ def list_thiet_bi(
     }
 
 
-@admin_router.post("/admin/thiet-bi")
+@admin_router.post("/thiet-bi")
 def create_thiet_bi(
     body: dict,
     db: Session = Depends(get_db),
@@ -283,7 +283,7 @@ def create_thiet_bi(
     return {"id": str(tb.id), "qr_code": tb.qr_code}
 
 
-@admin_router.put("/admin/thiet-bi/{thiet_bi_id}")
+@admin_router.put("/thiet-bi/{thiet_bi_id}")
 def update_thiet_bi(
     thiet_bi_id: str,
     body: dict,
@@ -307,7 +307,7 @@ def update_thiet_bi(
     return {"ok": True}
 
 
-@admin_router.delete("/admin/thiet-bi/{thiet_bi_id}")
+@admin_router.delete("/thiet-bi/{thiet_bi_id}")
 def delete_thiet_bi(
     thiet_bi_id: str,
     db: Session = Depends(get_db),
