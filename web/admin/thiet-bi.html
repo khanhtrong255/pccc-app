@@ -394,7 +394,7 @@ function authHeader() {
 async function doLogout() {
   try { await fetch(CONFIG.API_BASE_URL + '/auth/logout', { method: 'POST', headers: authHeader() }); } catch(e) {}
   clearSession();
-  window.location.href = 'index.html';
+  window.location.href = '/quanlyapp';
 }
 
 // ── Sidebar mobile ───────────────────────────────────────────
@@ -431,7 +431,7 @@ async function loadThietBi() {
   document.getElementById('card-sub').textContent = 'Đang tải...';
   try {
     const res = await fetch(CONFIG.API_BASE_URL + '/admin/thiet-bi?loai=' + currentLoai + '&limit=200', { headers: authHeader() });
-    if (res.status === 401) { clearSession(); window.location.href = 'index.html'; return; }
+    if (res.status === 401) { clearSession(); window.location.href = '/quanlyapp'; return; }
     const data = await res.json();
     allItems = data.items || [];
     applyFilter();
@@ -629,7 +629,7 @@ async function initApp() {
 if (loadSession()) {
   initApp();
 } else {
-  window.location.href = 'index.html';
+  window.location.href = '/quanlyapp';
 }
 </script>
 </body>
