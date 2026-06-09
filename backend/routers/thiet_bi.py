@@ -60,6 +60,13 @@ def get_or_create_phieu(thiet_bi_id: str, nhan_vien_id: str, db: Session):
 # PUBLIC ENDPOINTS (scan QR)
 # ══════════════════════════════════════════════════════════════
 
+@public_router.get("/thiet-bi/by-qr/{qr_code}")
+def get_thiet_bi_by_qr(qr_code: str, db: Session = Depends(get_db)):
+    tb = db.query(ThietBiPCCC).filter_by(qr_code=qr_code).first()
+    if not tb:
+        raise HTTPException(404, "Không tìm thấy thiết bị")
+    return {"id": str(tb.id)}
+
 @public_router.get("/thiet-bi/{thiet_bi_id}")
 def get_thiet_bi_info(thiet_bi_id: str, db: Session = Depends(get_db)):
     tb = db.query(ThietBiPCCC).filter_by(id=thiet_bi_id).first()

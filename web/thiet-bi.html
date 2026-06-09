@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Thông tin thiết bị PCCC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="/assets/config.js"></script>
+  <style>
+    :root {
+      --red:        #C8342A;
+      --red-dark:   #9E2820;
+      --red-light:  #FEF2F1;
+      --green:      #1B7A45;
+      --green-bg:   #EAF5EE;
+      --yellow:     #A86B00;
+      --yellow-bg:  #FFF6E0;
+      --gray-50:    #F7F6F4;
+      --gray-100:   #EEECEA;
+      --gray-200:   #DDDBD7;
+      --gray-300:   #C4C1BC;
+      --gray-400:   #9B9894;
+      --gray-500:   #716E6A;
+      --gray-700:   #3D3B38;
+      --gray-900:   #1C1B19;
+      --white:      #FFFFFF;
+      --radius-sm:  6px;
+      --radius:     10px;
+      --radius-lg:  16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--gray-50); color: var(--gray-900); min-height: 100vh; padding-bottom: 48px; }
+
+    /* ── Header ── */
+    .header { background: var(--red); padding: 0 0 24px; position: relative; overflow: hidden; }
+    .header-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 300px 200px at 110% -20%, rgba(255,255,255,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 200px 200px at -10% 110%, rgba(0,0,0,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; position: relative; }
+    .header-brand { display: flex; align-items: center; gap: 8px; }
+    .brand-icon { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .brand-text { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .header-body { padding: 0 20px; position: relative; }
+    .h-loai { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: rgba(255,255,255,0.55); text-transform: uppercase; margin-bottom: 4px; }
+    .h-name { font-size: 22px; font-weight: 700; color: #fff; line-height: 1.25; margin-bottom: 8px; }
+    .h-khu  { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 4px 10px; font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 500; }
+
+    /* ── Content ── */
+    .content { padding: 0 16px; margin-top: 16px; }
+    .section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; padding-left: 2px; }
+
+    /* ── Card ── */
+    .card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray-100); margin-bottom: 12px; overflow: hidden; }
+
+    /* ── Lịch sử ── */
+    .ls-table { width: 100%; border-collapse: collapse; }
+    .ls-table th { padding: 9px 14px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); background: var(--gray-50); border-bottom: 1px solid var(--gray-100); text-align: left; }
+    .ls-table td { padding: 11px 14px; border-bottom: 1px solid var(--gray-100); font-size: 13px; color: var(--gray-700); vertical-align: middle; }
+    .ls-table tr:last-child td { border-bottom: none; }
+    .ls-table tr.has-record { cursor: pointer; }
+    .ls-table tr.has-record:active { background: var(--gray-50); }
+    .ls-table tr.selected td { background: var(--red-light); }
+    .ls-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .ls-badge.dat-het         { background: var(--green-bg);  color: var(--green); }
+    .ls-badge.co-khong-dat    { background: var(--yellow-bg); color: var(--yellow); }
+    .ls-badge.chua-hoan-thanh { background: var(--red-light); color: var(--red); }
+    .ls-empty { padding: 28px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+    /* ── Phiếu chi tiết ── */
+    .phieu-wrap { padding: 0; margin-bottom: 12px; }
+    .phieu-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray-100); overflow: hidden; animation: slideDown 0.25s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .phieu-header { padding: 14px 16px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+    .phieu-date { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+    .phieu-inspector { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-dat   { background: var(--green-bg);  color: var(--green); }
+    .badge-khong { background: var(--yellow-bg); color: var(--yellow); }
+    .badge-chua  { background: var(--red-light); color: var(--red); }
+
+    /* Bảng tiêu chí trong phiếu */
+    .tieu-chi-table { width: 100%; border-collapse: collapse; }
+    .tieu-chi-table th { padding: 8px 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); text-align: left; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); }
+    .tieu-chi-table th.center { text-align: center; }
+    .tieu-chi-table td { padding: 9px 12px; font-size: 12px; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+    .tieu-chi-table tr:last-child td { border-bottom: none; }
+    .td-stt { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gray-400); width: 32px; }
+    .td-ket-qua { text-align: center; width: 52px; }
+    .ket-qua-icon { font-size: 16px; }
+    .td-bien-phap { font-size: 11px; color: var(--yellow); background: var(--yellow-bg); border-radius: 4px; padding: 4px 8px; margin-top: 3px; display: inline-block; }
+
+    /* ── Nút đăng nhập ── */
+    .login-wrap { padding: 0 0 4px; margin-top: 4px; }
+    .btn-login {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px;
+      background: var(--white); border: 1.5px solid var(--gray-200); border-radius: var(--radius-lg);
+      color: var(--gray-500); font-family: 'Be Vietnam Pro', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-login:hover, .btn-login:active { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    /* ── Year select ── */
+    .lich-su-sel {
+      padding: 6px 28px 6px 10px; border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-family: 'Be Vietnam Pro', sans-serif; font-size: 13px; color: var(--gray-900);
+      background: var(--white); outline: none; appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239B9894' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+    }
+    .lich-su-sel:focus { border-color: var(--red); }
+
+    /* ── State ── */
+    .state-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; gap: 14px; padding: 32px; text-align: center; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--gray-200); border-top-color: var(--red); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-icon { font-size: 48px; }
+    .state-msg  { font-size: 15px; font-weight: 600; color: var(--gray-700); }
+    .state-sub  { font-size: 13px; color: var(--gray-400); }
+
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .footer { text-align: center; padding: 24px 16px 0; font-size: 11px; color: var(--gray-300); }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="state-loading" class="state-wrap">
+  <div class="spinner"></div>
+  <p class="state-sub">Đang tải thông tin...</p>
+</div>
+
+<!-- Error -->
+<div id="state-error" class="state-wrap" style="display:none">
+  <div class="state-icon">⚠️</div>
+  <p class="state-msg" id="err-msg">Không tìm thấy thiết bị</p>
+  <p class="state-sub" id="err-sub">Vui lòng quét lại mã QR</p>
+</div>
+
+<!-- Main -->
+<div id="main" style="display:none">
+
+  <!-- Header -->
+  <div class="header fade-in">
+    <div class="header-bg"></div>
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="brand-icon">🧯</div>
+        <span class="brand-text">PCCC</span>
+      </div>
+    </div>
+    <div class="header-body">
+      <div class="h-loai" id="h-loai">—</div>
+      <div class="h-name" id="h-name">—</div>
+      <div class="h-khu"  id="h-khu" style="display:none">📍 <span id="h-khu-text">—</span></div>
+    </div>
+  </div>
+
+  <div class="content fade-in" style="animation-delay:0.05s">
+
+    <!-- Lịch sử kiểm tra -->
+    <div class="section-title">Lịch sử kiểm tra</div>
+    <div class="card">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600;color:var(--gray-700)">Năm</span>
+        <select id="sel-nam" class="lich-su-sel" onchange="onChangeNam()"></select>
+      </div>
+      <div id="lich-su-wrap">
+        <div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- Chi tiết phiếu -->
+    <div class="phieu-wrap" id="phieu-wrap" style="display:none"></div>
+
+    <!-- Nút đăng nhập -->
+    <div class="login-wrap">
+      <a href="#" id="btn-login" class="btn-login">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Đăng nhập để cập nhật kiểm tra
+      </a>
+    </div>
+
+    <div class="footer">Hệ thống quản lý PCCC · Quét mã QR để xem thông tin</div>
+  </div>
+</div>
+
+<script>
+  let thietBiId       = null;
+  let qrCode          = null;
+  let lichSuData      = {};
+  let curYear         = new Date().getFullYear();
+  let selectedPhieuId = null;
+
+  const LOAI_LABEL = {
+    hop_voi:    'Hộp vòi chữa cháy',
+    hop_pha_do: 'Hộp đựng dụng cụ phá dỡ',
+    tram_bom:   'Trạm bơm chữa cháy',
+  };
+
+  const TRANG_THAI_MAP = {
+    dat_het:         { cls: 'dat-het',         label: '✅ Đạt hết' },
+    co_khong_dat:    { cls: 'co-khong-dat',    label: '⚠️ Có không đạt' },
+    chua_hoan_thanh: { cls: 'chua-hoan-thanh', label: '📋 Chưa hoàn thành' },
+  };
+
+  function fmtDate(str) {
+    if (!str) return '—';
+    return new Date(str).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function showError(msg, sub) {
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('state-error').style.display   = 'flex';
+    document.getElementById('err-msg').textContent = msg;
+    document.getElementById('err-sub').textContent = sub || '';
+  }
+
+  // ── Render thông tin thiết bị ────────────────────────────
+  function renderThietBi(tb) {
+    document.getElementById('h-loai').textContent = (LOAI_LABEL[tb.loai] || tb.loai).toUpperCase();
+    document.getElementById('h-name').textContent = tb.ten_hien_thi;
+    if (tb.khu_vuc) {
+      document.getElementById('h-khu-text').textContent  = tb.khu_vuc;
+      document.getElementById('h-khu').style.display = 'inline-flex';
+    }
+    document.getElementById('btn-login').href = '/kiem-tra-thiet-bi.html?id=' + thietBiId;
+  }
+
+  // ── Lịch sử ──────────────────────────────────────────────
+  function buildYearSelect() {
+    const sel = document.getElementById('sel-nam');
+    const now = new Date().getFullYear();
+    let html  = '';
+    for (let y = now; y >= now - 4; y--) {
+      html += '<option value="' + y + '"' + (y === curYear ? ' selected' : '') + '>' + y + '</option>';
+    }
+    sel.innerHTML = html;
+  }
+
+  async function onChangeNam() {
+    curYear = parseInt(document.getElementById('sel-nam').value);
+    selectedPhieuId = null;
+    document.getElementById('phieu-wrap').style.display = 'none';
+    await loadLichSu(curYear);
+    renderBang();
+  }
+
+  async function loadLichSu(year) {
+    try {
+      const res  = await fetch(CONFIG.API_BASE_URL + '/public/thiet-bi/' + thietBiId);
+      const data = await res.json();
+      // Lọc theo năm từ lich_su
+      lichSuData[year] = (data.lich_su || []).filter(p => p.nam === year);
+    } catch(e) { console.error(e); }
+  }
+
+  function renderBang() {
+    const wrap = document.getElementById('lich-su-wrap');
+    const list = lichSuData[curYear] || [];
+    const THANG = ['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
+                   'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+
+    if (!list.length) {
+      wrap.innerHTML = '<div class="ls-empty">Không có dữ liệu kiểm tra năm ' + curYear + '</div>';
+      return;
+    }
+
+    const sorted = [...list].sort((a, b) => b.thang - a.thang);
+    const rows = sorted.map(p => {
+      const tt    = TRANG_THAI_MAP[p.trang_thai] || TRANG_THAI_MAP['chua_hoan_thanh'];
+      const isSel = p.id === selectedPhieuId;
+      return '<tr class="has-record ' + (isSel ? 'selected' : '') + '" onclick="loadPhieu(\'' + p.id + '\')">' +
+        '<td style="font-weight:600">' + THANG[p.thang] + '</td>' +
+        '<td style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--gray-400)">' + fmtDate(p.ngay_kiem_tra) + '</td>' +
+        '<td><span class="ls-badge ' + tt.cls + '">' + tt.label + '</span></td>' +
+        '</tr>';
+    }).join('');
+
+    wrap.innerHTML = '<table class="ls-table"><thead><tr><th>Tháng</th><th>Ngày kiểm tra</th><th>Trạng thái</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  // ── Chi tiết phiếu ────────────────────────────────────────
+  async function loadPhieu(phieuId) {
+    if (selectedPhieuId === phieuId) {
+      selectedPhieuId = null;
+      document.getElementById('phieu-wrap').style.display = 'none';
+      renderBang(); return;
+    }
+
+    selectedPhieuId = phieuId;
+    renderBang();
+
+    const wrap = document.getElementById('phieu-wrap');
+    wrap.style.display = 'block';
+    wrap.innerHTML = '<div class="phieu-card"><div style="padding:20px;text-align:center"><div class="spinner" style="margin:0 auto"></div></div></div>';
+    setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+
+    try {
+      const res = await fetch(CONFIG.API_BASE_URL + '/public/phieu-tb/' + phieuId);
+      const p   = await res.json();
+
+      const badgeMap = {
+        dat_het:         { cls: 'badge-dat',   label: 'Đạt hết' },
+        co_khong_dat:    { cls: 'badge-khong', label: 'Có không đạt' },
+        chua_hoan_thanh: { cls: 'badge-chua',  label: 'Chưa hoàn thành' },
+      };
+      const badge = badgeMap[p.trang_thai] || badgeMap['chua_hoan_thanh'];
+
+      const rows = (p.tieu_chi || []).map(tc =>
+        '<tr>' +
+          '<td class="td-stt">' + tc.stt + '</td>' +
+          '<td>' + tc.noi_dung +
+            (tc.ket_qua === 'khong_dat' && tc.bien_phap
+              ? '<div class="td-bien-phap">⚠ ' + tc.bien_phap + (tc.ngay_hoan_thanh ? ' · ' + fmtDate(tc.ngay_hoan_thanh) : '') + '</div>'
+              : '') +
+          '</td>' +
+          '<td class="td-ket-qua"><span class="ket-qua-icon">' +
+            (tc.ket_qua === 'dat' ? '✅' : tc.ket_qua === 'khong_dat' ? '❌' : '⬜') +
+          '</span></td>' +
+        '</tr>'
+      ).join('');
+
+      wrap.innerHTML =
+        '<div class="section-title">Chi tiết kiểm tra</div>' +
+        '<div class="phieu-card">' +
+          '<div class="phieu-header">' +
+            '<div>' +
+              '<div class="phieu-date">' + fmtDate(p.ngay_kiem_tra) + '</div>' +
+              (p.ten_nhan_vien ? '<div class="phieu-inspector">👤 ' + p.ten_nhan_vien + '</div>' : '') +
+            '</div>' +
+            '<span class="status-badge ' + badge.cls + '">' + badge.label + '</span>' +
+          '</div>' +
+          '<table class="tieu-chi-table">' +
+            '<thead><tr><th>STT</th><th>Hạng mục kiểm tra</th><th class="center">Kết quả</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+        '</div>';
+    } catch(e) {
+      wrap.innerHTML = '<div class="phieu-card" style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">Không thể tải chi tiết phiếu</div>';
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  async function init() {
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    qrCode = parts[parts.length - 1];
+
+    if (!qrCode) { showError('Mã QR không hợp lệ', 'Vui lòng quét lại'); return; }
+
+    try {
+      // Tra cứu thiet_bi_id từ qr_code
+      const resByQr = await fetch(CONFIG.API_BASE_URL + '/public/thiet-bi/by-qr/' + qrCode);
+      if (!resByQr.ok) throw new Error('not found');
+      const { id } = await resByQr.json();
+      thietBiId = id;
+
+      // Load thông tin + lịch sử song song
+      const resTB = await fetch(CONFIG.API_BASE_URL + '/public/thiet-bi/' + thietBiId);
+      if (!resTB.ok) throw new Error('not found');
+      const tb = await resTB.json();
+
+      // Phân loại lịch sử theo năm
+      (tb.lich_su || []).forEach(p => {
+        if (!lichSuData[p.nam]) lichSuData[p.nam] = [];
+        lichSuData[p.nam].push(p);
+      });
+
+      document.getElementById('state-loading').style.display = 'none';
+      document.getElementById('main').style.display = 'block';
+
+      renderThietBi(tb);
+      buildYearSelect();
+      renderBang();
+
+    } catch(e) {
+      showError('Không tìm thấy thiết bị', 'Vui lòng quét lại mã QR');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
