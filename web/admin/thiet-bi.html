@@ -236,6 +236,7 @@
         <option value="ngung">Ngưng</option>
       </select>
       <div style="flex:1"></div>
+      <button class="btn btn-outline btn-sm" onclick="printAllQR()">🖨️ In tất cả QR</button>
       <button class="btn btn-primary btn-sm admin-only" onclick="openModalThem()">+ Thêm mới</button>
     </div>
 
@@ -610,7 +611,7 @@ function deleteThietBi(id, stt) {
 // ── QR ────────────────────────────────────────────────────────
 function showQR(tb) {
   currentQrItem = tb;
-  const qrUrl = window.location.origin + '/qr-thiet-bi/' + tb.qr_code;
+  const qrUrl = window.location.origin + '/thiet-bi/' + tb.qr_code;
   document.getElementById('modal-qr-title').textContent = cfg.label + ' số ' + padStt(tb.so_thu_tu);
   document.getElementById('qr-url').textContent = qrUrl;
   document.getElementById('qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(qrUrl);
@@ -619,7 +620,7 @@ function showQR(tb) {
 
 function printQR() {
   if (!currentQrItem) return;
-  const qrUrl = window.location.origin + '/qr-thiet-bi/' + currentQrItem.qr_code;
+  const qrUrl = window.location.origin + '/thiet-bi/' + currentQrItem.qr_code;
   const label = cfg.label + ' số ' + padStt(currentQrItem.so_thu_tu);
   const win = window.open('', '_blank');
   win.document.write('<html><head><title>In QR – ' + label + '</title>' +
@@ -631,6 +632,43 @@ function printQR() {
     '<p style="margin-top:16px;font-size:11px;color:#aaa">' + qrUrl + '</p>' +
     '<scr' + 'ipt>window.onload=()=>window.print()<\/scr' + 'ipt>' +
     '</body></html>');
+  win.document.close();
+}
+
+// In QR hàng loạt
+function printAllQR() {
+  const items = filteredItems.length ? filteredItems : allItems;
+  if (!items.length) { alert('Không có thiết bị để in'); return; }
+
+  const win = window.open('', '_blank');
+  const rows = items.map(tb => {
+    const qrUrl = window.location.origin + '/thiet-bi/' + tb.qr_code;
+    return '<div class="qr-item">' +
+      '<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(qrUrl) + '">' +
+      '<div class="qr-label">' + cfg.label + ' số ' + padStt(tb.so_thu_tu) + '</div>' +
+      '<div class="qr-khu">' + (tb.ten_khu_vuc || '') + '</div>' +
+    '</div>';
+  }).join('');
+
+  win.document.write(
+    '<html><head><title>In QR – ' + cfg.label + '</title>' +
+    '<style>' +
+      'body{font-family:sans-serif;padding:20px}' +
+      'h2{margin-bottom:4px;font-size:16px}' +
+      'p{color:#666;font-size:12px;margin-bottom:20px}' +
+      '.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}' +
+      '.qr-item{text-align:center;padding:12px;border:1px solid #eee;border-radius:8px;break-inside:avoid}' +
+      '.qr-item img{width:150px;height:150px;border-radius:8px}' +
+      '.qr-label{font-size:12px;font-weight:700;margin-top:8px}' +
+      '.qr-khu{font-size:11px;color:#999;margin-top:2px}' +
+      '@media print{@page{margin:10mm}}' +
+    '</style></head><body>' +
+    '<h2>' + cfg.label + '</h2>' +
+    '<p>' + items.length + ' thiết bị' + (document.getElementById('filter-khu-vuc').selectedOptions[0]?.text !== 'Tất cả khu vực' ? ' · ' + document.getElementById('filter-khu-vuc').selectedOptions[0]?.text : '') + '</p>' +
+    '<div class="grid">' + rows + '</div>' +
+    '<scr' + 'ipt>window.onload=()=>window.print()<\/scr' + 'ipt>' +
+    '</body></html>'
+  );
   win.document.close();
 }
 
