@@ -204,6 +204,7 @@
         <div class="user-mini-name" id="sidebar-user-name">—</div>
         <div class="user-mini-role" id="sidebar-user-role">—</div>
       </div>
+      <button class="btn-logout-sm" onclick="openDoiMKAdmin()" title="Đổi mật khẩu">🔑</button>
       <button class="btn-logout-sm" onclick="doLogout()" title="Đăng xuất">⎋</button>
     </div>
   </div>
@@ -342,6 +343,38 @@
       <div class="modal-footer" style="justify-content:center">
         <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Hủy</button>
         <button class="btn btn-primary" id="btn-confirm-ok" style="background:var(--red)">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL ĐỔI MẬT KHẨU ── -->
+
+<div id="modal-doi-mk-admin" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal('modal-doi-mk-admin')">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <span class="modal-title">🔑 Đổi mật khẩu</span>
+        <button class="modal-close" onclick="closeModal('modal-doi-mk-admin')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alert-doi-mk-admin" class="alert"></div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu hiện tại <span class="req">*</span></label>
+          <input type="password" id="admin-mk-cu" class="form-input" placeholder="Nhập mật khẩu hiện tại">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu mới <span class="req">*</span></label>
+          <input type="password" id="admin-mk-moi" class="form-input" placeholder="Ít nhất 6 ký tự">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Xác nhận mật khẩu mới <span class="req">*</span></label>
+          <input type="password" id="admin-mk-moi2" class="form-input" placeholder="Nhập lại mật khẩu mới">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-doi-mk-admin')">Hủy</button>
+        <button class="btn btn-primary" id="btn-doi-mk-admin" onclick="doDoiMKAdmin()">💾 Lưu</button>
       </div>
     </div>
   </div>
@@ -623,6 +656,42 @@ async function initApp() {
   } catch(e) {}
 
   await loadThietBi();
+}
+
+// ── Đổi mật khẩu ────────────────────────
+
+function openDoiMKAdmin() {
+  document.getElementById('admin-mk-cu').value   = '';
+  document.getElementById('admin-mk-moi').value  = '';
+  document.getElementById('admin-mk-moi2').value = '';
+  document.getElementById('alert-doi-mk-admin').className = 'alert';
+  openModal('modal-doi-mk-admin');
+}
+
+async function doDoiMKAdmin() {
+  const cu   = document.getElementById('admin-mk-cu').value;
+  const moi  = document.getElementById('admin-mk-moi').value;
+  const moi2 = document.getElementById('admin-mk-moi2').value;
+  if (!cu || !moi || !moi2) { showAlert('alert-doi-mk-admin', 'Vui lòng điền đầy đủ thông tin', 'error'); return; }
+  if (moi !== moi2) { showAlert('alert-doi-mk-admin', 'Mật khẩu mới không khớp', 'error'); return; }
+  if (moi.length < 6) { showAlert('alert-doi-mk-admin', 'Mật khẩu mới phải có ít nhất 6 ký tự', 'error'); return; }
+  const btn = document.getElementById('btn-doi-mk-admin');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang lưu...';
+  try {
+    const res = await fetch(CONFIG.API_BASE_URL + '/auth/doi-mat-khau', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({ mat_khau_cu: cu, mat_khau_moi: moi }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showAlert('alert-doi-mk-admin', '✅ Đổi mật khẩu thành công!', 'success');
+      setTimeout(() => closeModal('modal-doi-mk-admin'), 1500);
+    } else {
+      showAlert('alert-doi-mk-admin', data.detail || 'Có lỗi xảy ra', 'error');
+    }
+  } catch(e) { showAlert('alert-doi-mk-admin', 'Không thể kết nối máy chủ', 'error'); }
+  btn.disabled = false; btn.innerHTML = '💾 Lưu';
 }
 
 // ── Boot: nếu chưa login thì về index ────────────────────────

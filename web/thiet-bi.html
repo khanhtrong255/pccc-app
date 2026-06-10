@@ -155,6 +155,7 @@
         <div class="brand-icon">🧯</div>
         <span class="brand-text">PCCC</span>
       </div>
+      <div id="h-bieu" style="display:none;text-align:right;color:rgba(255,255,255,0.75);font-size:12px;font-weight:500;line-height:1.4;max-width:180px"></div>
     </div>
     <div class="header-body">
       <div class="h-loai" id="h-loai">—</div>
@@ -209,6 +210,12 @@
     tram_bom:   'Trạm bơm chữa cháy',
   };
 
+  const LOAI_BIEU = {
+    hop_voi:    { ten: 'Báo biểu kiểm tra hộp chữa cháy vách tường', bieu: 'S-SEC 002-06.01' },
+    hop_pha_do: { ten: 'Báo biểu kiểm tra Dụng cụ phá dỡ chữa cháy', bieu: 'S-SEC 002-07.01' },
+    tram_bom:   { ten: 'Báo biểu kiểm tra Trạm bơm chữa cháy',       bieu: 'S-SEC 002-08.01' },
+  };
+
   const TRANG_THAI_MAP = {
     dat_het:         { cls: 'dat-het',         label: '✅ Đạt hết' },
     co_khong_dat:    { cls: 'co-khong-dat',    label: '⚠️ Có không đạt' },
@@ -236,6 +243,13 @@
       document.getElementById('h-khu').style.display = 'inline-flex';
     }
     document.getElementById('btn-login').href = '/kiem-tra-thiet-bi.html?id=' + thietBiId;
+
+    const bieu = LOAI_BIEU[tb.loai];
+    if (bieu) {
+      document.getElementById('h-bieu').innerHTML =
+        bieu.ten + '<br><span style="font-size:11px;opacity:0.8">(biểu ' + bieu.bieu + ')</span>';
+      document.getElementById('h-bieu').style.display = 'block';
+    }
   }
 
   // ── Lịch sử ──────────────────────────────────────────────
