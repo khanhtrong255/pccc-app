@@ -641,71 +641,31 @@ function printAllQR() {
   if (!items.length) { alert('Không có thiết bị để in'); return; }
 
   const win = window.open('', '_blank');
-
-  const pages = items.map(tb => {
+  const rows = items.map(tb => {
     const qrUrl = window.location.origin + '/thiet-bi/' + tb.qr_code;
-    const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=' + encodeURIComponent(qrUrl);
-    const tenLoai = cfg.label.toUpperCase();
-    const soThu   = 'SỐ ' + padStt(tb.so_thu_tu);
-    const khuVuc  = (tb.ten_khu_vuc || '').toUpperCase();
-
-    return '<div class="a5-page">' +
-      '<div class="content">' +
-        '<p class="title">QUÉT MÃ KIỂM TRA</p>' +
-        '<p class="title">' + tenLoai + ' ' + soThu + '</p>' +
-        (khuVuc ? '<p class="khu">' + khuVuc + '</p>' : '') +
-        '<div class="qr-wrap"><img src="' + qrSrc + '"></div>' +
-      '</div>' +
+    return '<div class="qr-item">' +
+      '<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(qrUrl) + '">' +
+      '<div class="qr-label">' + cfg.label + ' số ' + padStt(tb.so_thu_tu) + '</div>' +
+      '<div class="qr-khu">' + (tb.ten_khu_vuc || '') + '</div>' +
     '</div>';
   }).join('');
 
   win.document.write(
     '<html><head><title>In QR – ' + cfg.label + '</title>' +
     '<style>' +
-      '* { box-sizing: border-box; margin: 0; padding: 0; }' +
-      'body { background: #fff; }' +
-      '.a5-page {' +
-        'width: 148mm;' +
-        'height: 210mm;' +
-        'display: inline-flex;' +
-        'align-items: center;' +
-        'justify-content: center;' +
-        'page-break-after: always;' +
-        'break-after: page;' +
-      '}' +
-      '.content {' +
-        'text-align: center;' +
-        'padding: 12mm;' +
-        'width: 100%;' +
-      '}' +
-      '.title {' +
-        'font-family: Arial, sans-serif;' +
-        'font-size: 22pt;' +
-        'font-weight: 700;' +
-        'line-height: 1.3;' +
-        'margin-bottom: 6mm;' +
-        'color: #000;' +
-      '}' +
-      '.khu {' +
-        'font-family: Arial, sans-serif;' +
-        'font-size: 18pt;' +
-        'font-weight: 700;' +
-        'color: #000;' +
-        'margin-bottom: 10mm;' +
-      '}' +
-      '.qr-wrap img {' +
-        'width: 110mm;' +
-        'height: 110mm;' +
-        'display: block;' +
-        'margin: 0 auto;' +
-      '}' +
-      '@media print {' +
-        '@page { size: A5 portrait; margin: 0; }' +
-        'body { margin: 0; }' +
-        '.a5-page { page-break-after: always; break-after: page; }' +
-      '}' +
+      'body{font-family:sans-serif;padding:20px}' +
+      'h2{margin-bottom:4px;font-size:16px}' +
+      'p{color:#666;font-size:12px;margin-bottom:20px}' +
+      '.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}' +
+      '.qr-item{text-align:center;padding:12px;border:1px solid #eee;border-radius:8px;break-inside:avoid}' +
+      '.qr-item img{width:150px;height:150px;border-radius:8px}' +
+      '.qr-label{font-size:12px;font-weight:700;margin-top:8px}' +
+      '.qr-khu{font-size:11px;color:#999;margin-top:2px}' +
+      '@media print{@page{margin:10mm}}' +
     '</style></head><body>' +
-    pages +
+    '<h2>' + cfg.label + '</h2>' +
+    '<p>' + items.length + ' thiết bị' + (document.getElementById('filter-khu-vuc').selectedOptions[0]?.text !== 'Tất cả khu vực' ? ' · ' + document.getElementById('filter-khu-vuc').selectedOptions[0]?.text : '') + '</p>' +
+    '<div class="grid">' + rows + '</div>' +
     '<scr' + 'ipt>window.onload=()=>window.print()<\/scr' + 'ipt>' +
     '</body></html>'
   );
